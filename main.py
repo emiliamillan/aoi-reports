@@ -2,46 +2,10 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QTextEdit
 
 from utils import format_lots_input
+from workflow import Workflow, start_process
 
-GLOBAL_PATH = "\\\\mexhome03\\Data\\MC Back End\\Generic\\Molding and Singulation\\AOI REPORTS"
 
-ICOS_PATHS_LIST = [
-    "\\\\MEX6ICOS01\\_results\\ascii\\global",
-    "\\\\MEX6ICOS02\\_results\\ascii\\global",
-    "\\\\MEX6ICOS03\\_results\\ascii\\global",
-    "\\\\mex6icos04\\_results\\ascii\\global",
-    "\\\\mex6icos05\\_results\\ascii\\global",
-    "\\\\mex6icos06\\_results\\ascii\\global",
-    "\\\\mex6icos07\\_results\\ascii\\global",
-    "\\\\mex6icos08\\_Results\\ascii\\global",
-    "\\\\mex6icos09\\_results\\ascii\\global",
-    "\\\\mex6icos10\\_results\\ascii\\global",
-    "\\\\mex6icos11\\_results\\ascii\\global",
-    "\\\\mex6icos12\\_results\\ascii\\global",
-    "\\\\mex6icos13\\_results\\ascii\\global",
-    "\\\\mex6icos14\\_results\\ascii\\global",
-    "\\\\mex6icos15\\_results\\ascii\\global",
-    "\\\\mex6icos16\\_results\\ascii\\global"
-]
 
-ICOS_VARIANTS_LIST = [
-    ".1",
-    ".2",
-    ".3",
-    ".1_R1",
-    ".1_R2",
-    ".1_R3"
-]
-
-VITROX_PATHS_LIST = [
-    "\\\\mex6vtrx01\\d\\Texas\\Report\\ICPLUS",
-    "\\\\mex6vtrx02\\D\\Texas\\Report\\ICPLUS",
-]
-
-VITROX_VARIANTS_LIST = [
-    "\\\\mex6vtrx01\\d\\Texas\\Report\\ICPLUS",
-    "\\\\mex6vtrx02\\D\\Texas\\Report\\ICPLUS",
-]
 class MyDesktopApp(QWidget):
     """Class to define all layout of main user interface application
 
@@ -84,15 +48,7 @@ class MyDesktopApp(QWidget):
     def on_start_button_click(self):
         """Starts the workflow to search for lots in the specific paths of ICOS and Vitrox.
         """
-        entered_text = self.text_input.toPlainText()
-        self.label_instructions.setText(f'Entered text: {entered_text}')
-
-        lots_input = self.text_input.toPlainText()
-        list_of_lots = lots_input.split(";")
-
-        print(type(list_of_lots))
-        print(list_of_lots)
-
+        Workflow.flow(self)
 
     def on_format_button_click(self):
         format_lots_input(self)
