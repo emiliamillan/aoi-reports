@@ -1,57 +1,9 @@
 from pathlib import Path
-from main import MyDesktopApp
 
-from utils import aggregate_new_path, get_list_of_lots, select_folder
+from utils import EXTENSIONS, VITROX_PATHS_LIST, VITROX_VARIANTS_LIST, aggregate_new_path, get_list_of_lots, select_folder
 
 class Workflow:
-    GLOBAL_PATH = "\\\\mexhome03\\Data\\MC Back End\\Generic\\Molding and Singulation\\AOI REPORTS"
-
-    ICOS_PATHS_LIST = [
-        "\\\\MEX6ICOS01\\_results\\ascii\\global",
-        "\\\\MEX6ICOS02\\_results\\ascii\\global",
-        "\\\\MEX6ICOS03\\_results\\ascii\\global",
-        "\\\\mex6icos04\\_results\\ascii\\global",
-        "\\\\mex6icos05\\_results\\ascii\\global",
-        "\\\\mex6icos06\\_results\\ascii\\global",
-        "\\\\mex6icos07\\_results\\ascii\\global",
-        "\\\\mex6icos08\\_Results\\ascii\\global",
-        "\\\\mex6icos09\\_results\\ascii\\global",
-        "\\\\mex6icos10\\_results\\ascii\\global",
-        "\\\\mex6icos11\\_results\\ascii\\global",
-        "\\\\mex6icos12\\_results\\ascii\\global",
-        "\\\\mex6icos13\\_results\\ascii\\global",
-        "\\\\mex6icos14\\_results\\ascii\\global",
-        "\\\\mex6icos15\\_results\\ascii\\global",
-        "\\\\mex6icos16\\_results\\ascii\\global"
-    ]
-
-    ICOS_VARIANTS_LIST = [
-        ".1",
-        ".2",
-        ".3",
-        ".1_R1",
-        ".1_R2",
-        ".1_R3"
-    ]
-
-    VITROX_PATHS_LIST = [
-        "\\\\mex6vtrx01\\d\\Texas\\Report\\ICPLUS",
-        "\\\\mex6vtrx02\\D\\Texas\\Report\\ICPLUS",
-    ]
-
-    VITROX_VARIANTS_LIST = [
-        "\\\\mex6vtrx01\\d\\Texas\\Report\\ICPLUS",
-        "\\\\mex6vtrx02\\D\\Texas\\Report\\ICPLUS",
-    ]
-
-    EXTENSIONS = {
-        "vitrox":".txt",
-        "icos":".mht",
-    }
-
-    GLOBAL = "_global"
-
-
+    
     @staticmethod
     def vitrox_process():
         return 0
@@ -65,13 +17,13 @@ class Workflow:
         return 0
     
     @staticmethod
-    def flow(self: MyDesktopApp):
-        list_of_lots = get_list_of_lots(self)
+    def flow(text_input:str):
+        list_of_lots = get_list_of_lots(text_input)
         
         Workflow.look_up_for_lots(
             list_of_lots,
-            Workflow.VITROX_PATHS_LIST,
-            Workflow.VITROX_VARIANTS_LIST,
+            VITROX_PATHS_LIST,
+            VITROX_VARIANTS_LIST,
             "vitrox"
         )
         
@@ -86,7 +38,7 @@ class Workflow:
                 for variant in variants_list:
                     if "vitrox" in key_process:
                         print("Vitrox")
-                        lot_path = path + "\\" + lot + variant + Workflow.EXTENSIONS[key_process];
+                        lot_path = path + "\\" + lot + variant + EXTENSIONS[key_process];
                     elif "icos" in key_process:
                         print("Icos")
                         lot_path = path + "\\" + lot + variant + Workflow.GLOBAL + Workflow.EXTENSIONS[key_process];
@@ -95,6 +47,10 @@ class Workflow:
                         print("It exists")
                         folder = select_folder(path_list, path, key_process)
                         folder = aggregate_new_path(folder, lot, key_process, variant, Workflow.GLOBAL)
+
+
+
+
 
 
                             
