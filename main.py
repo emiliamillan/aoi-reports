@@ -1,10 +1,8 @@
 import sys
+from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QTextEdit
-
-from utils import format_lots_input
-from workflow import Workflow, start_process
-
-
+from utils import format_lots_input, get_list_of_lots, select_folder, aggregate_new_path
+from workflow import Workflow
 
 class MyDesktopApp(QWidget):
     """Class to define all layout of main user interface application
@@ -48,11 +46,12 @@ class MyDesktopApp(QWidget):
     def on_start_button_click(self):
         """Starts the workflow to search for lots in the specific paths of ICOS and Vitrox.
         """
-        Workflow.flow(self)
+        Workflow.flow(self.text_input.toPlainText())
 
     def on_format_button_click(self):
-        
-        self.text_input.setPlainText(format_lots_input(self.text_input.toPlainText()))
+        lots_formatted = format_lots_input(self.text_input.toPlainText())
+        self.text_input.setPlainText(lots_formatted)
+
 
 
 if __name__ == '__main__':
