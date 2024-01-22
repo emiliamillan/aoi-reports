@@ -5,16 +5,17 @@ from PyQt5.QtWidgets import QTextEdit
 from main import MyDesktopApp
 from workflow import Workflow
 
-def format_lots_input(self: QTextEdit):
-    text = self.text_input.toPlainText().replace(".1\n", ";")
+def format_lots_input(text:str):
+    text = text.replace(".1\n", ";")
     text = text.replace(".1\r\n", ";")
     text = text.replace(".1","")
-    self.text_input.setPlainText(text)
+    return text
 
 def get_list_of_lots(self: MyDesktopApp):
     lots_input = self.text_input.toPlainText()
     list_of_lots = lots_input.split(";")
     print(list_of_lots)
+    return list_of_lots
 
 def select_folder(path_list:list|str, path: str, key_process:str):
     folder = ""

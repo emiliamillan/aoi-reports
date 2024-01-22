@@ -51,7 +51,8 @@ class MyDesktopApp(QWidget):
         Workflow.flow(self)
 
     def on_format_button_click(self):
-        format_lots_input(self)
+        
+        self.text_input.setPlainText(format_lots_input(self.text_input.toPlainText()))
 
 
 if __name__ == '__main__':
