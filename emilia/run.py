@@ -8,7 +8,7 @@ VTRX2 = '//mex6vtrx02/Texas/Report/ICPLUS'
 # Initialize an empty DataFrame to store the extracted data
 COLUMNS = ['Lot', 
            'Vitrox ID',
-           'Th ID',
+           'Recipe',
            'Yield', 
            'Total Inspected', 
            'Total Reject', 
@@ -19,15 +19,13 @@ COLUMNS = ['Lot',
            'BX',
            'BY',
            'Contaminacion metal',
-           'Tablero despostilla',
-           'Residuo metalico-80',
+           'Tablero despostillado',
            'Residuo metalico-80',
            'Mark Invalid Device',
            'Pin1',
            'Despostillado-84',
            'Contaminacion-93',
-           'Marking 1',
-           'Pin1',]  # Cause of defect
+           'Marking 1',]  # Cause of defect
 
 # Function to read text files and extract values
 def process_text_file(file_path) -> dict:
@@ -56,14 +54,13 @@ def process_text_file(file_path) -> dict:
             start = row.find(':')+2 
             end = row.find('    ',25)
             value = row[start:end]
+            dictionary["Recipe"] = value
             #print(value)
-            dictionary["recipe"] = value
         if 'MACHINE' in row:
             start = row.find(':')+2 
             end = row.find('    ',25)
             value = row[start:end].split(' | ')
             dictionary["Vitrox ID"] = value[0]
-            dictionary["Th ID"] = value[1]
             #print(value)
         if 'Total Yield' in row:
             start = row.find(':', 45)+2
@@ -82,6 +79,7 @@ def process_text_file(file_path) -> dict:
             value = row[start:end]
             dictionary["Total Rejected"] = value
             #print(value)
+        
         # DEFECTS    
         if 'Invalid      ' in row: 
             start = row.find('  ',len(row)-10) 
@@ -113,6 +111,46 @@ def process_text_file(file_path) -> dict:
             value = row[start:len(row)]
             dictionary["BY"] = value
             #print(value)
+        if 'Contaminacion metalica-90' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Contaminacion metalica"] = value
+            #print(value)
+        if 'Tablero despostillado-84' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Tablero despostillado"] = value
+            #print(value)
+        if 'Residuo metalico-80' in row and 'edge' not in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Tablero despostillado"] = value
+            #print(value)
+        if 'Mark Invalid Device' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Mark Invalid Device"] = value
+            #print(value)
+        if 'Pin1' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Pin1"] = value
+            #print(value)
+        if 'Despostillado-84' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Despostillado-84"] = value
+            #print(value)
+        if 'Contaminacion-93' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Contaminacion-93"] = value
+            #print(value)
+        if 'Marking 1' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Marking 1"] = value
+            print(value)
     
     dictionary["File Name"]= os.path.basename(file_path)
     #print(dictionary)
@@ -123,10 +161,13 @@ def main():
 
 
 if __name__ == '__main__':
+    
     dictionary = process_text_file('emilia/4756640.1.txt')
+
     df = pd.DataFrame(dictionary,columns=COLUMNS, index=[0])
     
-    print(df.columns)
-    #Export it
+    #remove whitespaces
+    #df = df.map(lambda x: x.strip() if isinstance(x, str) else x)    
+    
+    #Export dataframe
     df.to_csv('output.csv', index=False)
-    print(df)
