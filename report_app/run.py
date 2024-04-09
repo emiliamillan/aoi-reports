@@ -1,9 +1,13 @@
+from datetime import datetime
 import os
 import pandas as pd
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QTextEdit
 
-# Define the paths where your text files are located
-VTRX1 = '//mex6vtrx01/Texas/Report/ICPLUS'
-VTRX2 = '//mex6vtrx02/Texas/Report/ICPLUS'
+PATHS_TO_SEARCH = [
+    '//mex6vtrx01/Texas/Report/ICPLUS',
+    '//mex6vtrx02/Texas/Report/ICPLUS',
+    ]
 
 # Initialize an empty DataFrame to store the extracted data
 COLUMNS = ['Lot', 
@@ -155,13 +159,78 @@ def process_text_file(file_path) -> dict:
     dictionary["File Name"]= os.path.basename(file_path)
     #print(dictionary)
     return dictionary
-    
-def main():
-    pass
+
+
+def format_lots_input(self: QTextEdit):
+    text = self.text_input.toPlainText().replace("\n", ";")
+    self.text_input.setPlainText(text)
+
+class ReportApp(QWidget):
+    """Class to define all layout of main user interface application
+
+    Args:
+        QWidget (_type_): _description_
+    """
+    def __init__(self):
+        super().__init__()
+
+        # Create widgets
+        self.label_instructions = QLabel('Ingresa los lotes a buscar separados por un ";": ')
+        
+        #TextBox Input
+        self.text_input = QTextEdit()
+        self.text_input.setFixedSize(300,100)
+        self.text_input.setCursor
+        self.text_input = self.text_input
+
+        self.start_button = QPushButton('Generar Reporte')
+        self.start_button.setFixedSize(125,30)
+        self.start_button.setGeometry(50, 50, 200, 50)
+
+        self.format_button = QPushButton('Formatear')
+        self.format_button.setFixedSize(100,30)
+
+        # Connect the button click event to the method
+        self.start_button.clicked.connect(self.on_start_button_click)
+        self.format_button.clicked.connect(self.on_format_button_click)
+
+        # Set up the layout
+        layout = QVBoxLayout()
+        layout.addWidget(self.label_instructions)
+        layout.addWidget(self.text_input)
+        layout.addWidget(self.start_button)
+        layout.addWidget(self.format_button)
+
+        # Set the layout for the main window
+        self.setLayout(layout)
+
+    def on_start_button_click(self):
+        """Starts the workflow to search for lots in the specific paths of ICOS and Vitrox.
+        """
+        pass
+
+    def on_format_button_click(self):
+        format_lots_input(self)
 
 
 if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = ReportApp()
+    window.setWindowTitle('Report App')
+    window.show()
+    sys.exit(app.exec_())
+
+    # Define the time range
+    start_date_str = '2024-03-01'
+    end_date_str = '2024-03-07'
+
+    # Convert start and end dates to Unix timestamps
+    start_date = int(datetime.strptime(start_date_str, '%Y-%m-%d').timestamp())
+    end_date = int(datetime.strptime(end_date_str, '%Y-%m-%d').timestamp())
+    print(start_date)
+    print(end_date)
     
+    ###
     dictionary = process_text_file('emilia/4756640.1.txt')
 
     df = pd.DataFrame(dictionary,columns=COLUMNS, index=[0])
