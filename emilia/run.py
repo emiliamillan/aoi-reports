@@ -8,7 +8,7 @@ VTRX2 = '//mex6vtrx02/Texas/Report/ICPLUS'
 # Initialize an empty DataFrame to store the extracted data
 COLUMNS = ['Lot', 
            'Vitrox ID',
-           'Th ID' 
+           'Th ID',
            'Yield', 
            'Total Inspected', 
            'Total Reject', 
@@ -28,8 +28,6 @@ COLUMNS = ['Lot',
            'Contaminacion-93',
            'Marking 1',
            'Pin1',]  # Cause of defect
-
-df = pd.DataFrame(columns=COLUMNS)
 
 # Function to read text files and extract values
 def process_text_file(file_path) -> dict:
@@ -84,14 +82,40 @@ def process_text_file(file_path) -> dict:
             value = row[start:end]
             dictionary["Total Rejected"] = value
             #print(value)
+        # DEFECTS    
         if 'Invalid      ' in row: 
             start = row.find('  ',len(row)-10) 
             value = row[start:len(row)]
             dictionary["Invalid"] = value
             #print(value)
+        if 'Rayon en el pad-NE' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Rayon en el pad-NE"] = value
+            #print(value)
+        if 'Contam. en pad-93' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Contam en pad-93"] = value
+            #print(value)
+        if 'Contam. en pad-93' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["Contam en pad-93"] = value
+            #print(value)
+        if 'BX' in row and 'micron' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["BX"] = value
+            #print(value)
+        if 'BY' in row and 'micron' in row: 
+            start = row.find('  ',len(row)-10) 
+            value = row[start:len(row)]
+            dictionary["BY"] = value
+            #print(value)
     
     dictionary["File Name"]= os.path.basename(file_path)
-    print(dictionary)
+    #print(dictionary)
     return dictionary
     
 def main():
@@ -100,9 +124,9 @@ def main():
 
 if __name__ == '__main__':
     dictionary = process_text_file('emilia/4756640.1.txt')
+    df = pd.DataFrame(dictionary,columns=COLUMNS, index=[0])
     
-
-    
-    #df.append()
-
-
+    print(df.columns)
+    #Export it
+    df.to_csv('output.csv', index=False)
+    print(df)
