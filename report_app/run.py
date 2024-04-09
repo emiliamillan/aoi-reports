@@ -171,6 +171,18 @@ def find_dates_within_range(date_list, start_date, end_date):
 
     return dates_within_range
 
+def get_last_modified_time(file_path):
+    try:
+        # Get the last modification time of the file in seconds since the epoch
+        modification_time = os.path.getmtime(file_path)
+        print("pasoo 1")
+        # Convert the timestamp to a datetime object
+        last_modified_datetime = datetime.fromtimestamp(modification_time)
+        
+        return last_modified_datetime.date()
+    except FileNotFoundError:
+        return None
+
 if __name__ == '__main__':
     # Define the time range
     start_date_str = '2024-03-01'
@@ -180,6 +192,9 @@ if __name__ == '__main__':
     dates = ['2022-01-01', '2022-01-05', '2022-01-10', '2022-01-15', '2022-01-20']
     start_date = '2022-01-03'
     end_date = '2022-01-15'
+
+    last_modified_time = get_last_modified_time('report_app/output.csv')
+    print('Last ', last_modified_time)
 
     dates_within_range = find_dates_within_range(dates, start_date, end_date)
     print("Dates within the range:", dates_within_range)    
