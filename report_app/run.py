@@ -1,8 +1,6 @@
 from datetime import datetime
 import os
 import pandas as pd
-import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QTextEdit
 
 PATHS_TO_SEARCH = [
     '//mex6vtrx01/Texas/Report/ICPLUS',
@@ -160,76 +158,32 @@ def process_text_file(file_path) -> dict:
     #print(dictionary)
     return dictionary
 
+def find_dates_within_range(date_list, start_date, end_date):
+    # Convert start_date and end_date to datetime objects
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
-def format_lots_input(self: QTextEdit):
-    text = self.text_input.toPlainText().replace("\n", ";")
-    self.text_input.setPlainText(text)
+    # Convert date_list elements to datetime objects
+    date_list = [datetime.strptime(date, "%Y-%m-%d") for date in date_list]
 
-class ReportApp(QWidget):
-    """Class to define all layout of main user interface application
+    # Filter dates within the range
+    dates_within_range = [date for date in date_list if start_date <= date <= end_date]
 
-    Args:
-        QWidget (_type_): _description_
-    """
-    def __init__(self):
-        super().__init__()
-
-        # Create widgets
-        self.label_instructions = QLabel('Ingresa los lotes a buscar separados por un ";": ')
-        
-        #TextBox Input
-        self.text_input = QTextEdit()
-        self.text_input.setFixedSize(300,100)
-        self.text_input.setCursor
-        self.text_input = self.text_input
-
-        self.start_button = QPushButton('Generar Reporte')
-        self.start_button.setFixedSize(125,30)
-        self.start_button.setGeometry(50, 50, 200, 50)
-
-        self.format_button = QPushButton('Formatear')
-        self.format_button.setFixedSize(100,30)
-
-        # Connect the button click event to the method
-        self.start_button.clicked.connect(self.on_start_button_click)
-        self.format_button.clicked.connect(self.on_format_button_click)
-
-        # Set up the layout
-        layout = QVBoxLayout()
-        layout.addWidget(self.label_instructions)
-        layout.addWidget(self.text_input)
-        layout.addWidget(self.start_button)
-        layout.addWidget(self.format_button)
-
-        # Set the layout for the main window
-        self.setLayout(layout)
-
-    def on_start_button_click(self):
-        """Starts the workflow to search for lots in the specific paths of ICOS and Vitrox.
-        """
-        pass
-
-    def on_format_button_click(self):
-        format_lots_input(self)
-
+    return dates_within_range
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = ReportApp()
-    window.setWindowTitle('Report App')
-    window.show()
-    sys.exit(app.exec_())
-
     # Define the time range
     start_date_str = '2024-03-01'
     end_date_str = '2024-03-07'
 
-    # Convert start and end dates to Unix timestamps
-    start_date = int(datetime.strptime(start_date_str, '%Y-%m-%d').timestamp())
-    end_date = int(datetime.strptime(end_date_str, '%Y-%m-%d').timestamp())
-    print(start_date)
-    print(end_date)
-    
+    # Example usage
+    dates = ['2022-01-01', '2022-01-05', '2022-01-10', '2022-01-15', '2022-01-20']
+    start_date = '2022-01-03'
+    end_date = '2022-01-15'
+
+    dates_within_range = find_dates_within_range(dates, start_date, end_date)
+    print("Dates within the range:", dates_within_range)    
+    raise
     ###
     dictionary = process_text_file('emilia/4756640.1.txt')
 
