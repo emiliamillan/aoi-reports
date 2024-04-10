@@ -159,7 +159,6 @@ def process_text_file(file_path) -> dict:
     #print(dictionary)
     return dictionary
 
-
 def get_last_modified_time(file_path):
     try:
         modification_time = os.path.getmtime(file_path)
@@ -184,18 +183,21 @@ def main(start_date: str, end_date: str) -> list[str]| None:
             file_path = os.path.join(path, filename)
             last_modified_time = get_last_modified_time(file_path)
             if start_date <= last_modified_time <= end_date:
-                list_files.append(filename)
+                list_files.append(file_path)
             if len(list_files) == 2:
                 break
         break
 
-    df = pd.DataFrame(columns=COLUMNS, index=[0])
+    df = None
     for file in list_files:
         print('Creating report...')
         dictionary = process_text_file(file)
-        new_df = pd.DataFrame(dictionary, columns=COLUMNS, index=[0])
-        df = df.append(new_df, ignore_index=True)
-    
+        if df is None: 
+            df = pd.DataFrame(dictionary, columns=COLUMNS, index=[0])
+        else: 
+            new_df = pd.DataFrame(dictionary, columns=COLUMNS, index=[0])
+            df = pd.concat([df,new_df], ignore_index=True)
+
     #Export dataframe
     df.to_csv('output.csv', index=False)
 
@@ -203,11 +205,7 @@ if __name__ == '__main__':
     #Enter your dates here
     start_date_str = '2024-03-01'
     end_date_str = '2024-04-10'
-    
-    main(start_date_str, end_date_str)
-    ###
-
-    
-    #remove whitespaces
-    #df = df.map(lambda x: x.strip() if isinstance(x, str) else x)    
-    
+    try:
+        main(start_date_str, end_date_str)   
+    except Exception as e:
+        print("Hubo un error. Corre de nuevo la app.", e)
