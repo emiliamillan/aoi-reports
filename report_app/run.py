@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 PATHS_TO_SEARCH = [
-    '/Users/DimasEmiliano/Documents/VisualStudioCode/aoi-reports/report_app/tests',
+    #'/Users/DimasEmiliano/Documents/VisualStudioCode/aoi-reports/report_app/tests', #debug purposes, don´t delete
     '//mex6vtrx01/Texas/Report/ICPLUS',
     '//mex6vtrx02/Texas/Report/ICPLUS',
     ]
@@ -207,6 +207,9 @@ def main(start_date: str, end_date: str) -> str | None:
         else: 
             new_df = pd.DataFrame(dictionary, columns=COLUMNS, index=[0])
             df = pd.concat([df,new_df], ignore_index=True)
+
+    #remove whitespaces
+    df = df.map(lambda x: x.strip() if isinstance(x, str) else x)    
 
     #Export dataframe
     new_filename = os.getcwd() + '/report_app/' + 'report_' + start_date.strftime("%Y-%m-%d") + '_' + end_date.strftime("%Y-%m-%d")+ '.csv'
