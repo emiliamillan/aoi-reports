@@ -1,9 +1,10 @@
 from datetime import datetime
 import os
+from pathlib import Path
 import pandas as pd
 
 PATHS_TO_SEARCH = [
-    #'/Users/DimasEmiliano/Documents/VisualStudioCode/aoi-reports/report_app/tests', #debug purposes, don´t delete
+    '/Users/DimasEmiliano/Documents/VisualStudioCode/aoi-reports/report_app/tests', #debug purposes, don´t delete
     '\\\\mex6vtrx01\\Texas\\Report\\ICPLUS',
     '\\\\mex6vtrx02\\Texas\\Report\\ICPLUS',
     ]
@@ -187,14 +188,15 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
             if start_date <= last_modified_time <= end_date:
                 list_files.append(file_path)
         #---- DEBUG PURPOSES, DON´T REVOVE ----
-            #if len(list_files) == 2:
-            #    break
-        #break
+            if len(list_files) == 2:
+                break
+        break
         #--------------------------------------
 
     print('Generating report...')
     df = None
     for file in list_files:
+        file = Path(file)
         try:
             dictionary = process_text_file(file)
             if df is None: 
