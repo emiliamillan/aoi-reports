@@ -4,8 +4,8 @@ import pandas as pd
 
 PATHS_TO_SEARCH = [
     #'/Users/DimasEmiliano/Documents/VisualStudioCode/aoi-reports/report_app/tests', #debug purposes, don´t delete
-    '\\mex6vtrx01\\Texas\\Report\\ICPLUS',
-    '\\mex6vtrx02\\Texas\\Report\\ICPLUS',
+    '\\\\mex6vtrx01\\Texas\\Report\\ICPLUS',
+    '\\\\mex6vtrx02\\Texas\\Report\\ICPLUS',
     ]
 
 # Initialize an empty DataFrame to store the extracted data
@@ -191,8 +191,9 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
             #    break
         #break
         #--------------------------------------
-    df = None
+
     print('Generating report...')
+    df = None
     for file in list_files:
         try:
             dictionary = process_text_file(file)
