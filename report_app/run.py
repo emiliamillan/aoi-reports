@@ -12,6 +12,8 @@ PATHS_TO_SEARCH = [
 COLUMNS = ['Lot', 
            'Vitrox ID',
            'Recipe',
+           'Start Time',
+           'End Time',
            'Yield', 
            'Total Inspected', 
            'Total Reject', 
@@ -51,8 +53,13 @@ def process_text_file(file_path) -> dict:
         if 'START TIME' in row: 
             start = row.find(':', 50)+2
             value = row[start: len(row)]
-            dictionary["start_time"] = value
+            dictionary["Start Time"] = value
             #print(value)
+        if 'END TIME' in row: 
+            start = row.find(':', 50)+2
+            value = row[start: len(row)]
+            dictionary["End Time"] = value
+            print(value)            
         if 'RECIPE' in row: 
             start = row.find(':')+2 
             end = row.find('    ',25)
@@ -169,7 +176,9 @@ def get_last_modified_time(file_path):
         return None
 
 
-def main(start_date: str, end_date: str) -> list[str]| None:
+def main(start_date: str, end_date: str) -> str | None:
+    print('Starting Report App... ')
+    print('By: Emilia Millan ')
     start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
     end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
     list_files = list()
@@ -190,8 +199,8 @@ def main(start_date: str, end_date: str) -> list[str]| None:
         #break
         #--------------------------------------
     df = None
+    print('Generating report...')
     for file in list_files:
-        print('Creating report...')
         dictionary = process_text_file(file)
         if df is None: 
             df = pd.DataFrame(dictionary, columns=COLUMNS, index=[0])
@@ -200,13 +209,16 @@ def main(start_date: str, end_date: str) -> list[str]| None:
             df = pd.concat([df,new_df], ignore_index=True)
 
     #Export dataframe
-    df.to_csv('report_app/output.csv', index=False)
+    new_filename = os.getcwd() + '/report_app/' + 'report_' + start_date.strftime("%Y-%m-%d") + '_' + end_date.strftime("%Y-%m-%d")+ '.csv'
+    df.to_csv(new_filename, index=False)
+    return new_filename
 
 if __name__ == '__main__':
     #Enter your dates here
-    start_date_str = '2024-03-01'
-    end_date_str = '2024-04-10'
+    start_date = '2024-03-01'
+    end_date = '2024-04-10'
     try:
-        main(start_date_str, end_date_str)   
+        path = main(start_date, end_date) 
+        print('Report created. Located at', path)  
     except Exception as e:
         print("Hubo un error. Corre de nuevo la app.", e)
