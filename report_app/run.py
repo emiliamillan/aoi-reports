@@ -3,6 +3,7 @@ import os
 import pandas as pd
 
 PATHS_TO_SEARCH = [
+    #'/Users/DimasEmiliano/Documents/VisualStudioCode/aoi-reports/report_app/tests',
     '//mex6vtrx01/Texas/Report/ICPLUS',
     '//mex6vtrx02/Texas/Report/ICPLUS',
     ]
@@ -152,60 +153,61 @@ def process_text_file(file_path) -> dict:
             start = row.find('  ',len(row)-10) 
             value = row[start:len(row)]
             dictionary["Marking 1"] = value
-            print(value)
+            #print(value)
     
     dictionary["File Name"]= os.path.basename(file_path)
     #print(dictionary)
     return dictionary
 
-def find_dates_within_range(date_list, start_date, end_date):
-    # Convert start_date and end_date to datetime objects
-    start_date = datetime.strptime(start_date, "%Y-%m-%d")
-    end_date = datetime.strptime(end_date, "%Y-%m-%d")
-
-    # Convert date_list elements to datetime objects
-    date_list = [datetime.strptime(date, "%Y-%m-%d") for date in date_list]
-
-    # Filter dates within the range
-    dates_within_range = [date for date in date_list if start_date <= date <= end_date]
-
-    return dates_within_range
 
 def get_last_modified_time(file_path):
     try:
-        # Get the last modification time of the file in seconds since the epoch
         modification_time = os.path.getmtime(file_path)
-        print("pasoo 1")
         # Convert the timestamp to a datetime object
         last_modified_datetime = datetime.fromtimestamp(modification_time)
-        
         return last_modified_datetime.date()
     except FileNotFoundError:
         return None
 
+
+def main(start_date: str, end_date: str) -> list[str]| None:
+    start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+    end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+    list_files = list()
+    
+    #Select files we will process, only .txt files within the range dates
+    for path in PATHS_TO_SEARCH:
+        for filename in os.listdir(path):
+            if 'txt' not in filename.split(".")[-1]:
+                continue
+            print('Filename', filename)
+            file_path = os.path.join(path, filename)
+            last_modified_time = get_last_modified_time(file_path)
+            if start_date <= last_modified_time <= end_date:
+                list_files.append(filename)
+            if len(list_files) == 2:
+                break
+        break
+
+    df = pd.DataFrame(columns=COLUMNS, index=[0])
+    for file in list_files:
+        print('Creating report...')
+        dictionary = process_text_file(file)
+        new_df = pd.DataFrame(dictionary, columns=COLUMNS, index=[0])
+        df = df.append(new_df, ignore_index=True)
+    
+    #Export dataframe
+    df.to_csv('output.csv', index=False)
+
 if __name__ == '__main__':
-    # Define the time range
+    #Enter your dates here
     start_date_str = '2024-03-01'
-    end_date_str = '2024-03-07'
-
-    # Example usage
-    dates = ['2022-01-01', '2022-01-05', '2022-01-10', '2022-01-15', '2022-01-20']
-    start_date = '2022-01-03'
-    end_date = '2022-01-15'
-
-    last_modified_time = get_last_modified_time('report_app/output.csv')
-    print('Last ', last_modified_time)
-
-    dates_within_range = find_dates_within_range(dates, start_date, end_date)
-    print("Dates within the range:", dates_within_range)    
-    raise
+    end_date_str = '2024-04-10'
+    
+    main(start_date_str, end_date_str)
     ###
-    dictionary = process_text_file('emilia/4756640.1.txt')
 
-    df = pd.DataFrame(dictionary,columns=COLUMNS, index=[0])
     
     #remove whitespaces
     #df = df.map(lambda x: x.strip() if isinstance(x, str) else x)    
     
-    #Export dataframe
-    df.to_csv('output.csv', index=False)
