@@ -59,7 +59,7 @@ def process_text_file(file_path) -> dict:
             start = row.find(':', 50)+2
             value = row[start: len(row)]
             dictionary["End Time"] = value
-            print(value)            
+            #print(value)            
         if 'RECIPE' in row: #b
             start = row.find(':')+2 
             end = row.find('    ',25)
@@ -181,7 +181,7 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
         for filename in os.listdir(path):
             if 'txt' not in filename.split(".")[-1]:
                 continue
-            print('Filename', filename)
+            #print('Filename', filename)
             file_path = os.path.join(path, filename)
             last_modified_time = get_last_modified_time(file_path)
             if start_date <= last_modified_time <= end_date:
@@ -194,13 +194,17 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     df = None
     print('Generating report...')
     for file in list_files:
-        print("Found")
-        dictionary = process_text_file(file)
-        if df is None: 
-            df = pd.DataFrame(dictionary, columns=COLUMNS, index=[0])
-        else: 
-            new_df = pd.DataFrame(dictionary, columns=COLUMNS, index=[0])
-            df = pd.concat([df,new_df], ignore_index=True)
+        try:
+            dictionary = process_text_file(file)
+            if df is None: 
+                df = pd.DataFrame(dictionary, columns=COLUMNS, index=[0])
+            else: 
+                new_df = pd.DataFrame(dictionary, columns=COLUMNS, index=[0])
+                df = pd.concat([df,new_df], ignore_index=True)
+        except Exception as e:
+            print(f"There was an error while processing {file}. Don't worry, will not include that file.") 
+            print(f"Error is {e}" ) 
+            continue
 
     #remove whitespaces
     df = df.map(lambda x: x.strip() if isinstance(x, str) else x)    
