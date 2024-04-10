@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 PATHS_TO_SEARCH = [
-    #'/Users/DimasEmiliano/Documents/VisualStudioCode/aoi-reports/report_app/tests',
+    '/Users/DimasEmiliano/Documents/VisualStudioCode/aoi-reports/report_app/tests',
     '//mex6vtrx01/Texas/Report/ICPLUS',
     '//mex6vtrx02/Texas/Report/ICPLUS',
     ]
@@ -184,10 +184,11 @@ def main(start_date: str, end_date: str) -> list[str]| None:
             last_modified_time = get_last_modified_time(file_path)
             if start_date <= last_modified_time <= end_date:
                 list_files.append(file_path)
-            if len(list_files) == 2:
-                break
-        break
-
+        #---- DEBUG PURPOSES, DON´T REVOVE ----
+            #if len(list_files) == 2:
+            #    break
+        #break
+        #--------------------------------------
     df = None
     for file in list_files:
         print('Creating report...')
@@ -199,7 +200,7 @@ def main(start_date: str, end_date: str) -> list[str]| None:
             df = pd.concat([df,new_df], ignore_index=True)
 
     #Export dataframe
-    df.to_csv('output.csv', index=False)
+    df.to_csv('report_app/output.csv', index=False)
 
 if __name__ == '__main__':
     #Enter your dates here
