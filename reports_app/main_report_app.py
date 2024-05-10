@@ -172,7 +172,11 @@ def get_last_modified_time(file_path):
         return None
 
 
-def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
+def generate_reports(start_date: datetime.date, end_date: datetime.date) -> str | None:
+    if start_date is None | end_date is None:
+        print('No dates selected. Try Again')
+        return
+
     print('Starting Report App... ')
     print('By: Emilia Millan ')
     list_files = list()
@@ -222,7 +226,7 @@ if __name__ == '__main__':
     start_date = datetime.strptime('2024-03-01', "%Y-%m-%d").date()
     end_date = datetime.strptime('2024-04-10', "%Y-%m-%d").date()
     try:
-        path, file_count= main(start_date, end_date) 
+        path, file_count= generate_reports(start_date, end_date) 
         print(f'Report created. Located at: {path}')  
         print(f'Included {file_count} files in the report')  
     except Exception as e:
