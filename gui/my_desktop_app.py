@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QDate
 
-from reports_app.main_report_app import generate_reports
+from reports_app.utils import generate_reports
 from search_app.utils.utils import format_lots_input
 from search_app.utils.workflow import Workflow
 
