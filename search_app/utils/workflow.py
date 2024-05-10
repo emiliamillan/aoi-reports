@@ -1,3 +1,4 @@
+from pathlib import Path
 from search_app.utils.utils import aggregate_new_path, get_list_of_lots, select_folder
 
 
