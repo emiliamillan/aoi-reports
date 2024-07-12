@@ -88,7 +88,7 @@ def process_text_file(file_path) -> dict:
             start = row.find(':')+2 
             end = row.find('    ',25)
             value = row[start:end]
-            dictionary["Total Rejected"] = value
+            dictionary["Total Reject"] = value
             #print(value)
         
         # DEFECTS    
@@ -223,7 +223,7 @@ def generate_reports(start_date: datetime.date, end_date: datetime.date) -> str 
 
 if __name__ == '__main__':
     #Enter your dates here
-    start_date = datetime.strptime('2024-03-01', "%Y-%m-%d").date()
+    start_date = datetime.strptime('2024-04-06', "%Y-%m-%d").date()
     end_date = datetime.strptime('2024-04-10', "%Y-%m-%d").date()
     try:
         path, file_count= generate_reports(start_date, end_date) 
