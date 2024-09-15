@@ -1,30 +1,23 @@
-# aoi-reports
-
-## Description
+# AOI APP
 Built-in desktop application with GUI to search for lots files in different server directories. 
 
+# Getting Started
 
+# Contribute 
 ## Run Virtual Environment
+### Create virtual environment
+`python3 -m venv env`
+### Activate on MacOS
+`source env/bin/activate`
+### Windows
+`.\env\Scripts\activatepython3 -m venv env`
+### To turn off
+`deactivate`
 
-### Create virtual environment:
-´´´python3 -m venv env´´´
-
-### Activate on MacOS: 
-´´´source env/bin/activate´´´
-
-### Windows: 
-´´´.\env\Scripts\activatepython3 -m venv env´´´
-
-### To turn off: 
-´´´deactivate´´´
-
-
-# Logic Steps of the App
-1. Ingresar lotes
-2. Formatear lotes (mover depsues de paso 4)
-3. Seleccionar Funcion: 
-4. Correr
-5. Buscar o generar?
-    - Buscar
-        5.1. 
-    - Generar
+## Flow Diagram
+```mermaid
+flowchart TD
+    A[Start App] --> B[Load Lots] --> C{Search or Report?}
+    C -->|Search| D[Process] --> F[End]
+    C -->|Report| E[Process] --> F[End]
+```
