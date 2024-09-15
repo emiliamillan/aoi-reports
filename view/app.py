@@ -65,6 +65,12 @@ class App(QWidget):
         self.label_end_date.setEnabled(False)
         self.end_dateEdit.setEnabled(False)
 
+        #Author's label
+        self.label_author = QLabel("""
+        Author: Emilia Millan
+        Process Engineering - BackEnd
+        """)
+
         # Connect the button click event to the method
         self.start_button.clicked.connect(self._on_start_button_click)
 
@@ -83,15 +89,18 @@ class App(QWidget):
         layout.addWidget(self.start_dateEdit)
         layout.addWidget(self.label_end_date)
         layout.addWidget(self.end_dateEdit)
+        layout.addWidget(self.label_author)
 
         # Set the layout for the main window
         self.setLayout(layout)
 
     def _on_start_button_click(self):
         """It starts the app process."""
+        #Step 1: Clean up data
         format_input(self)
         lots = get_lots(self)
 
+        
         if self.radioButton1.isChecked(): #Buscar/Mover Reportes
             search_lots(lots, VITROX_PATHS_LIST, VITROX_VARIANTS_LIST, "vitrox")
             search_lots(lots, ICOS_PATHS_LIST, ICOS_VARIANTS_LIST, "icos")
