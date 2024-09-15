@@ -1,0 +1,64 @@
+name: Build Python Desktop App
+
+on:
+  workflow_dispatch: 
+  push:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build the app with PyInstaller
+        run: |
+          pip install pyinstaller
+          pyinstaller --onefile --windowed app.py
+
+      - name: Archive the build
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-build
+          path: dist/
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build the app with PyInstaller
+        run: |
+          pip install pyinstaller
+          pyinstaller --onefile --windowed app.py
+
+      - name: Archive the build
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-build
+          path: dist/
