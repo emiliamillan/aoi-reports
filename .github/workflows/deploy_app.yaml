@@ -29,4 +29,4 @@ jobs:
 
     - name: Run the Python application
       run: |
-        python main.py  # Replace this with your app's entry point
+        python run.py  # Replace this with your app's entry point
