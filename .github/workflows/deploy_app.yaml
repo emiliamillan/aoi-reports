@@ -27,9 +27,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: Install xvfb and other dependencies
-      run: sudo apt-get install -y xvfb
-  
+    - name: Install Qt and xcb dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libx11-xcb1 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxi6 libxrandr2 libxtst6 libxss1 libxkbcommon-x11-0 libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-shm0 libxcb-xfixes0 libxcb-shape0 libxcb-sync1 libxcb-xinerama0 libxrender1
+
     - name: Run the Python application with xvfb
       run: |
         xvfb-run -a python run.py  # Replace this with your app's entry point
