@@ -1,4 +1,4 @@
-name: Python Application
+name: Deploy AOI app
 
 on:
   push:
@@ -26,7 +26,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Run the Python application
+    
+    - name: Install xvfb and other dependencies
+      run: sudo apt-get install -y xvfb
+  
+    - name: Run the Python application with xvfb
       run: |
-        python run.py  # Replace this with your app's entry point
+        xvfb-run -a python run.py  # Replace this with your app's entry point
+
+
