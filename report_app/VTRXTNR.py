@@ -4,8 +4,8 @@ from pathlib import Path
 import pandas as pd
 
 PATHS_TO_SEARCH = [
-    '\\\\mex6vtrx01\\Texas\\Report\\ICPLUS',
-    '\\\\mex6vtrx02\\Texas\\Report\\ICPLUS',
+    '\\\\mex6vtrx07\\Texas\\Report\\ICPLUS',
+    '\\\\mex6vtrx08\\Texas\\Report\\ICPLUS'
     ]
 
 # Initialize an empty DataFrame to store the extracted data
@@ -27,21 +27,21 @@ def process_text_file(file_path) -> dict:
     content = content.split('\n')
     #Extract the needed fields
     dictionary = dict()   
-
+    row_index = 0 
     for row in content:
         start, end = "",""
-        if 'LOT' in row and '.LOT' not in row:
+        if 'LOT    ' in row and '.LOT' not in row:
             start = row.find(':')+2 
             end = row.find('    ',25)
             value = row[start:end]
             dictionary["Lot"] = value
             #print(value)
-        if 'START TIME' in row: #a
+        if 'START TIME' in row and row_index in range(0,10): #a
             start = row.find(':', 50)+2
             value = row[start: len(row)]
             dictionary["Start Time"] = value
             #print(value)
-        if 'END TIME' in row: #a
+        if 'END TIME' in row and row_index in range(0,10): #a
             start = row.find(':', 50)+2
             value = row[start: len(row)]
             dictionary["End Time"] = value
@@ -76,6 +76,7 @@ def process_text_file(file_path) -> dict:
             value = row[start:end]
             dictionary["Total Reject"] = value
             #print(value)
+        row_index+=1
     dictionary["File Name"]= os.path.basename(file_path)
     return dictionary
 
@@ -135,11 +136,13 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
 
 if __name__ == '__main__':
     #Enter your dates here
-    start_date = datetime.strptime('2024-04-02', "%Y-%m-%d").date()
-    end_date = datetime.strptime('2024-04-08', "%Y-%m-%d").date()
+    
+    start_date = datetime.strptime('2024-10-09', "%Y-%m-%d").date()
+    end_date = datetime.strptime('2024-10-10', "%Y-%m-%d").date()
     try:
         path, file_count= main(start_date, end_date) 
         print(f'Report created. Located at: {path}')  
         print(f'Included {file_count} files in the report')  
     except Exception as e:
         print("Hubo un error. Corre de nuevo la app.", e)
+    

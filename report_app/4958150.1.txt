@@ -1,0 +1,85 @@
+                               VITROX SUMMARY REPORT
+____________________________________________________________________________________
+
+LOT               : 4958150.1                                START TIME : 2024/10/10 19:37:49
+CUST.LOT          :                                          END TIME   : 2024/10/11 02:43:20
+OPERATOR          :                                          TOTAL TIME : 07:05:31
+RECIPE            : SKY55446+REV3                            RUN TIME   : 04:27:53
+MACHINE           : 6VTRX08 | TR3000i-090                    OUTPUT MODE: TAPE
+____________________________________________________________________________________
+
+TOTAL INSPECTED  : 20923             Total Yield :  97.410%   
+TOTAL ACCEPTED   : 20381 
+3D BALL REJECT   : 72                      Yield :  99.656%   ON
+TOP MARK REJECT  : 88                      Yield :  99.579%   ON
+CAL MARK REJECT  : 0                       Yield :   0.000%   OFF
+3D AUX REJECT    : 339                     Yield :  98.380%   ON
+TAPE MARK REJECT : 27                      Yield :  99.871%   ON
+UNSEATED UNIT    : 16    
+TOTAL REJECT     : 542   
+____________________________________________________________________________________
+
+Group 1          : 411            
+Group 2          : 115            
+------------------------------------------------------------------------------------
+NET UPH          : 2950
+GROSS UPH        : 4686
+____________________________________________________________________________________
+
+CAUSE OF REJECTS         INSPECTION LIMITS        REJECT
+--------------------------------------------------------
+Invalid                         NA                    13 
+MB                              NA                     0 
+WI                        165.0 to   215.0 micron      1 
+XO                        -50.0 to    50.0 micron      0 
+YO                        -50.0 to    50.0 micron      0 
+CO                          0.0 to    50.0 micron      0 
+BH                         20.0 to    70.0 micron      0 
+Contaminacion metalica-90        NA                     1 
+Tablero Despostillado-84        NA                     0 
+Residuo metalico-80             NA                    57 
+Mark Invalid Device             NA                     5 
+BX                         1500 to    1700 micron      0 
+BY                         1900 to    2100 micron      0 
+Pin1                         35 to     100 %          76 
+Despostillado superior (84)        NA                     7 
+Contaminacion (92)              NA                     0 
+Red line - 98                   NA                     0 
+Marking 1                    60 to     100 %           0 
+Invalid                         NA                   252 
+Die Edge                        NA                    71 
+Middle Crack                    NA                    18 
+Mark Invalid Device             NA                     0 
+Pin1                         45 to     100 %          20 
+White Scratch                   NA                     7 
+Chipout                         NA                     0 
+Tape Marking 1               40 to     100 %           0 
+________________________________________________________________________________________________________________________________
+
+Capability                        LSL  Nominal      USL      Min  Average      Max    Sigma   3Sigma       Cp      Cpk
+--------------------------------------------------------------------------------------------------------------------------------
+WI                              165.0    190.0    215.0    157.1    191.3    212.2      4.3     12.9     1.93     1.84
+XO                              -50.0      0.0     50.0    -16.9      0.0     10.5      3.5     10.4     4.79     4.78
+YO                              -50.0      0.0     50.0     -8.6      0.4     13.6      3.4     10.3     4.83     4.79
+CO                                0.0      0.0     50.0      1.7      5.9     36.8      1.2      3.7     6.83    12.05
+BH                               20.0     45.0     70.0     21.2     32.4     61.3      2.4      7.2     3.47     1.72
+
+
+____________________________________________________________________________________
+
+REEL SIZE               : 11500
+LOT START REEL QUANTITY : 0
+LOT END REEL QUANTITY   : 8830
+REEL COUNT              : 1
+TOTAL UNIT              : 20330
+
+ID                START TIME    END TIME       TOTAL      REMARK
+----------------------------------------------------------------
+1                   20:04:10    22:49:05       11500            
+____________________________________________________________________________________
+
+ALARM RANK
+==========
+Rank    Alarm                                                                                                            Frequency  Percentage
+----------------------------------------------------------------------------------------------------------------------------------------------
+  1     03015: UNIT DROPPED FROM PP1.                                                                                        1         100.00%
