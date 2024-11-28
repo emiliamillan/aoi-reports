@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 PATHS_TO_SEARCH = [
-    '\\\\mex6vtrx07\\Texas\\Report\\ICPLUS',
+    '\\\\mex6vtrx07\\D\\Texas\\Report\\ICPLUS',
     '\\\\mex6vtrx08\\Texas\\Report\\ICPLUS'
     ]
 
@@ -17,7 +17,12 @@ COLUMNS = ['Lot',
            'Yield', 
            'Total Inspected', 
            'Total Reject',
-           'Output Mode']  # Cause of defect
+           'Output Mode',
+           'Invalid 3D',
+           'Invalid Mark',
+           'Invalid uCrack',
+           'BX',
+           'BY']  # Cause of defect
 
 # Function to read text files and extract values
 def process_text_file(file_path) -> dict:
@@ -78,12 +83,47 @@ def process_text_file(file_path) -> dict:
             dictionary["Total Reject"] = value
             #print(value)
         if 'OUTPUT MODE' in row and row_index in range(0,10): #b
-            start = row.find(':')+2 
-            end = row.find('    ',25)
+            start = row.find('OUTPUT MODE:')+2 
+            end = row.find('  ',25)
             value = row[start:end]
             dictionary["OUTPUT MODE"] = value
             #print(value)
-        
+        if 'Invalid' in row and '-------------' in content[row_index-1]: #b
+            start = row.find('Invalid')+46 
+            end = row.find('    ',60)
+            value = row[start:end]
+            dictionary["Invalid 3D"] = value
+            #print(f'First Invalid: {value}')
+        if 'Mark Invalid Device' in row and row_index in range(33,43) and 'BX' in content[row_index+1] and '6VTRX07' in dictionary["Vitrox ID"]: #vitrox 7
+            start = row.find('Mark Invalid Device')+50   
+            end = row.find('  ',58)
+            value = row[start:end]
+            dictionary["Invalid Mark"] = value
+            #print(f'07 Mark Invalid: {value}')
+        if 'Mark Invalid Device' in row and row_index in range(33,43) and 'BX' in content[row_index+1] and '6VTRX08' in dictionary["Vitrox ID"]: #vtrx 8
+            start = row.find('Mark Invalid Device')+50   
+            end = row.find('   ',60)
+            value = row[start:end]
+            dictionary["Invalid Mark"] = value
+            #print(f'08 Mark Invalid: {value}')
+        if ('Invalid' in row ) and ('Die' in content[row_index+1]): #b
+            start = row.find('Invalid')+ 46 
+            end = row.find('    ',60)
+            value = row[start:end]
+            dictionary["Invalid uCrack"] = value
+            #print(f'Last Invalid{value}')
+        if 'BX' in row: #b
+            start = row.find('BX')+55
+            end = row.find('   ',60)
+            value = row[start:end]
+            dictionary["BX"] = value
+            print(f'BX: {value}')        
+        if 'BY' in row: #b
+            start = row.find('BY')+55
+            end = row.find('   ',60)
+            value = row[start:end]
+            dictionary["BY"] = value
+            print(f'BY: {value}')        
         row_index+=1
     dictionary["File Name"]= os.path.basename(file_path)
     return dictionary
@@ -138,15 +178,15 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     df = df.map(lambda x: x.strip() if isinstance(x, str) else x)    
 
     #Export dataframe
-    new_filename = os.path.join(os.getcwd(),'report_app', f'report_{start_date.strftime("%Y-%m-%d")}_{end_date.strftime("%Y-%m-%d")}.csv')
+    new_filename = os.path.join(os.getcwd(),'report_app', f'Invalid_{start_date.strftime("%Y-%m-%d")}_{end_date.strftime("%Y-%m-%d")}.csv')
     df.to_csv(new_filename, index=False)
     return new_filename, len(list_files)
 
 if __name__ == '__main__':
     #Enter your dates here
     
-    start_date = datetime.strptime('2024-10-01', "%Y-%m-%d").date()
-    end_date = datetime.strptime('2024-10-30', "%Y-%m-%d").date()
+    start_date = datetime.strptime('2024-11-20', "%Y-%m-%d").date()
+    end_date = datetime.strptime('2024-11-27', "%Y-%m-%d").date()
     try:
         path, file_count= main(start_date, end_date) 
         print(f'Report created. Located at: {path}')  
