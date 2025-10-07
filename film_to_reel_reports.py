@@ -81,63 +81,167 @@ VISION_COLUMNS = [
     ]
 
 OUTPUT_COLUMNS = [
-    "Lot", "Equip ID", "Date", 
-    "Qty Insp DP1", "Total Reject", "Yield", # Lot summary 
-    "Tape & Reel B Total", "Reel 1", "Reel 2", "Reel 3", 
-    
-    "Passed", "Empty Failed", "Others Failed", "Angle Failed", "TOTAL",	# Die Position 1 Vision Yield
-    "Passed", "Empty Failed", "Others Failed", "Angle Failed", "TOTAL",	# Die Position 2 Vision Yield
-    "Passed", "Empty Failed", "Others Failed", "Angle Failed", "TOTAL",	# Die Position 3 Vision Yield
-    "Passed", "Empty Failed", "Others Failed", "Angle Failed", "TOTAL",	# Die Position 4 Vision Yield
-    "Passed", "Empty Failed", "Others Failed", "Angle Failed", "TOTAL",	# Die Position 5 Vision Yield
-    
+    ('', 'Lot'),
+    ('', 'Equip ID'),
+    ('', 'Date'),
+
+    ('Lot Summary', 'Qty Insp DP1'),
+    ('Lot Summary', 'Total Reject'),
+    ('Lot Summary', 'Yield'),
+
+    ('', 'Tape & Reel B Total'),
+    ('', 'Reel 1'),
+    ('', 'Reel 2'),
+    ('', 'Reel 3'),
+
+    ('Die Position 1 Vision Yield', 'Passed'),
+    ('Die Position 1 Vision Yield', 'Empty Failed'),
+    ('Die Position 1 Vision Yield', 'Others Failed'),
+    ('Die Position 1 Vision Yield', 'Angle Failed'),
+    ('Die Position 1 Vision Yield', 'TOTAL'),
+
+    ('Die Position 2 Vision Yield', 'Passed'),
+    ('Die Position 2 Vision Yield', 'Empty Failed'),
+    ('Die Position 2 Vision Yield', 'Others Failed'),
+    ('Die Position 2 Vision Yield', 'Angle Failed'),
+    ('Die Position 2 Vision Yield', 'TOTAL'),
+
+    ('Die Position 3 Vision Yield', 'Passed'),
+    ('Die Position 3 Vision Yield', 'Empty Failed'),
+    ('Die Position 3 Vision Yield', 'Others Failed'),
+    ('Die Position 3 Vision Yield', 'Angle Failed'),
+    ('Die Position 3 Vision Yield', 'TOTAL'),
+
+    ('Die Position 4 Vision Yield', 'Passed'),
+    ('Die Position 4 Vision Yield', 'Empty Failed'),
+    ('Die Position 4 Vision Yield', 'Others Failed'),
+    ('Die Position 4 Vision Yield', 'Angle Failed'),
+    ('Die Position 4 Vision Yield', 'TOTAL'),
+
+    ('Die Position 5 Vision Yield', 'Passed'),
+    ('Die Position 5 Vision Yield', 'Empty Failed'),
+    ('Die Position 5 Vision Yield', 'Others Failed'),
+    ('Die Position 5 Vision Yield', 'Angle Failed'),
+    ('Die Position 5 Vision Yield', 'TOTAL'),
+
     #Bump Vision Yield
-    'Passed', 'Empty Failed', 'Others Failed','Angle Failed','Die Sawn Failed','Chip In Failed','Chip Out Failed',
-    'Contamination Failed', 'Crack Failed','Die Size Failed','SubROI Failed','Spec Failed','Bump Failed',
-    'Pad Failed','TOTAL',
+    ('Bump Vision Yield', 'Passed'),
+    ('Bump Vision Yield', 'Empty Failed'),
+    ('Bump Vision Yield', 'Others Failed'),
+    ('Bump Vision Yield', 'Angle Failed'),
+    ('Bump Vision Yield', 'Die Sawn Failed'),
+    ('Bump Vision Yield', 'Chip In Failed'),
+    ('Bump Vision Yield', 'Chip Out Failed'),
+    ('Bump Vision Yield', 'Contamination Failed'),
+    ('Bump Vision Yield', 'Crack Failed'),
+    ('Bump Vision Yield', 'Die Size Failed'),
+    ('Bump Vision Yield', 'SubROI Failed'),
+    ('Bump Vision Yield', 'Spec Failed'),
+    ('Bump Vision Yield', 'Bump Failed'),
+    ('Bump Vision Yield', 'Pad Failed'),
+    ('Bump Vision Yield', 'TOTAL'),
 
     # 5S Sidewall Vision Yield
-    'Passed','Empty Failed','Others Failed','Angle Failed','Chip Failed','Contamination Failed','Crack Failed',
-    'Bump Failed','TOTAL',
+    ('5S Sidewall Vision Yield', 'Passed'),
+    ('5S Sidewall Vision Yield', 'Empty Failed'),
+    ('5S Sidewall Vision Yield', 'Others Failed'),
+    ('5S Sidewall Vision Yield', 'Angle Failed'),
+    ('5S Sidewall Vision Yield', 'Chip Failed'),
+    ('5S Sidewall Vision Yield', 'Contamination Failed'),
+    ('5S Sidewall Vision Yield', 'Crack Failed'),
+    ('5S Sidewall Vision Yield', 'Bump Failed'),
+    ('5S Sidewall Vision Yield', 'TOTAL'),
 
     # Pocket Position B Vision Yield
-    'Passed','Others Failed','TOTAL',
+    ('Pocket Position B Vision Yield', 'Passed'),
+    ('Pocket Position B Vision Yield', 'Others Failed'),
+    ('Pocket Position B Vision Yield', 'TOTAL'),
 
     #In Pocket B Vision Yield
-    'Passed','Empty Failed','Others Failed','Angle Failed','Chip In Failed','Chip Out Failed',
-    'Contamination Failed','Crack Failed','Adhesive Failed','Edge Failed','Die Size Failed','SubROI Failed',
-    'Marking Failed','Orientation Failed','No Mark Failed','2D Code Failed','Copper Exposed Failed','TOTAL',
+    ('In Pocket B Vision Yield', 'Passed'),
+    ('In Pocket B Vision Yield', 'Empty Failed'),
+    ('In Pocket B Vision Yield', 'Others Failed'),
+    ('In Pocket B Vision Yield', 'Angle Failed'),
+    ('In Pocket B Vision Yield', 'Chip In Failed'),
+    ('In Pocket B Vision Yield', 'Chip Out Failed'),
+    ('In Pocket B Vision Yield', 'Contamination Failed'),
+    ('In Pocket B Vision Yield', 'Crack Failed'),
+    ('In Pocket B Vision Yield', 'Adhesive Failed'),
+    ('In Pocket B Vision Yield', 'Edge Failed'),
+    ('In Pocket B Vision Yield', 'Die Size Failed'),
+    ('In Pocket B Vision Yield', 'SubROI Failed'),
+    ('In Pocket B Vision Yield', 'Marking Failed'),
+    ('In Pocket B Vision Yield', 'Orientation Failed'),
+    ('In Pocket B Vision Yield', 'No Mark Failed'),
+    ('In Pocket B Vision Yield', '2D Code Failed'),
+    ('In Pocket B Vision Yield', 'Copper Exposed Failed'),
+    ('In Pocket B Vision Yield', 'TOTAL'),
 
     # Post Seal B Vision Yield
-    'Empty Failed','Others Failed','Angle Failed','Chip Failed','Crack Failed','Contamination Failed',
-    'Marking Failed', 'Top Layer Seal Broken', 'Bottom Layer Seal Broken','Both Layer Seal Broken',
-    'Top Layer Seal Limit Exceeded','Bottom Layer Seal Limit Exceeded','Both Layer Seal Limit Exceeded',
-    'Top Layer Seal Width Inconsistency','Bottom Layer Seal Width Inconsistency',
-    'Both Layer Seal Width Inconsistency','Relative Seal Width Inconsistency','TOTAL',
+    ('Post Seal B Vision Yield', 'Empty Failed'),
+    ('Post Seal B Vision Yield', 'Others Failed'),
+    ('Post Seal B Vision Yield', 'Angle Failed'),
+    ('Post Seal B Vision Yield', 'Chip Failed'),
+    ('Post Seal B Vision Yield', 'Crack Failed'),
+    ('Post Seal B Vision Yield', 'Contamination Failed'),
+    ('Post Seal B Vision Yield', 'Marking Failed'),
+    ('Post Seal B Vision Yield', 'Top Layer Seal Broken'),
+    ('Post Seal B Vision Yield', 'Bottom Layer Seal Broken'),
+    ('Post Seal B Vision Yield', 'Both Layer Seal Broken'),
+    ('Post Seal B Vision Yield', 'Top Layer Seal Limit Exceeded'),
+    ('Post Seal B Vision Yield', 'Bottom Layer Seal Limit Exceeded'),
+    ('Post Seal B Vision Yield', 'Both Layer Seal Limit Exceeded'),
+    ('Post Seal B Vision Yield', 'Top Layer Seal Width Inconsistency'),
+    ('Post Seal B Vision Yield', 'Bottom Layer Seal Width Inconsistency'),
+    ('Post Seal B Vision Yield', 'Both Layer Seal Width Inconsistency'),
+    ('Post Seal B Vision Yield', 'Relative Seal Width Inconsistency'),
+    ('Post Seal B Vision Yield', 'TOTAL'),
 
     # TopVision Vision Yield
-    'Passed','Empty Failed','Others Failed','Chip Failed','Contamination Failed',
-    'Crack Failed','Marking Failed','Discolouration Failed','Copper Exposed Failed','TOTAL',
+    ('TopVision Vision Yield', 'Passed'),
+    ('TopVision Vision Yield', 'Empty Failed'),
+    ('TopVision Vision Yield', 'Others Failed'),
+    ('TopVision Vision Yield', 'Chip Failed'),
+    ('TopVision Vision Yield', 'Contamination Failed'),
+    ('TopVision Vision Yield', 'Crack Failed'),
+    ('TopVision Vision Yield', 'Marking Failed'),
+    ('TopVision Vision Yield', 'Discolouration Failed'),
+    ('TopVision Vision Yield', 'Copper Exposed Failed'),
+    ('TopVision Vision Yield', 'TOTAL'),
 
     # 3D Vision Yield
-    'Passed','Empty Failed','Others Failed','Bump Height Failed','Warpage Failed','Slanted Failed','TOTAL',
+    ('3D Vision Yield', 'Passed'),
+    ('3D Vision Yield', 'Empty Failed'),
+    ('3D Vision Yield', 'Others Failed'),
+    ('3D Vision Yield', 'Bump Height Failed'),
+    ('3D Vision Yield', 'Warpage Failed'),
+    ('3D Vision Yield', 'Slanted Failed'),
+    ('3D Vision Yield', 'TOTAL'),
 
     # Infrared Ray Vision Yield
-    'Passed','Empty Failed','Others Failed','Angle Failed','Chip Failed','Contamination Failed',
-    'Crack Failed','Marking Failed','Delamination','TOTAL',
+    ('Infrared Ray Vision Yield', 'Passed'),
+    ('Infrared Ray Vision Yield', 'Empty Failed'),
+    ('Infrared Ray Vision Yield', 'Others Failed'),
+    ('Infrared Ray Vision Yield', 'Angle Failed'),
+    ('Infrared Ray Vision Yield', 'Chip Failed'),
+    ('Infrared Ray Vision Yield', 'Contamination Failed'),
+    ('Infrared Ray Vision Yield', 'Crack Failed'),
+    ('Infrared Ray Vision Yield', 'Marking Failed'),
+    ('Infrared Ray Vision Yield', 'Delamination'),
+    ('Infrared Ray Vision Yield', 'TOTAL'),
 ]
 
-FIRST_COL_NAMES = [ "Lot Summary","Input Wafer Vision Yield", "Die Position 1 Vision Yield", "Die Position 2 Vision Yield", 
+COL_NAMES = {
+    "first_col_names": [ "Lot Summary","Input Wafer Vision Yield", "Die Position 1 Vision Yield", "Die Position 2 Vision Yield", 
     "Die Position 3 Vision Yield", "Die Position 4 Vision Yield", "Die Position 5 Vision Yield", "Bump Vision Yield", 
     "5S Sidewall Vision Yield", "Pocket Position B Vision Yield", "In Pocket B Vision Yield", "Post Seal B Vision Yield", "TopVision Vision Yield",
-    "3D Vision Yield", "Infrared Ray Vision Yield"
-]
+    "3D Vision Yield", "Infrared Ray Vision Yield"],
+    
+    "table_names": [ "Tape & Reel - Reel A Summary", "Wafer Information", "Alarm List"]
+}
 
-TABLE_NAMES = [
-    "Tape & Reel - Reel A Summary", "Wafer Information", "Alarm List", ""
-]
 
-def split_csv_by_empty_rows(file_path):
+def load_tables_from_csv(file_path):
     """Split CSV with multiple tables separated by empty rows"""
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -159,7 +263,8 @@ def split_csv_by_empty_rows(file_path):
                             on_bad_lines='skip',    # Skip problematic lines
                             dtype=str,              # Read everything as strings first
                             header=None)
-                    if section.split('\n')[0] in TABLE_NAMES: # Tables with name
+                        df.attrs['table_name'] = 'general_data'
+                    if section.split('\n')[0] in COL_NAMES["table_names"]: # Tables with name
                         df = pd.read_csv(io.StringIO(section), 
                             sep=',',
                             skiprows=1,
@@ -167,25 +272,72 @@ def split_csv_by_empty_rows(file_path):
                             on_bad_lines='skip',    
                             dtype=str,              
                             header=0)
-                    if section.split(',')[0] in FIRST_COL_NAMES: # Tables with different first col name
+                        df.attrs['table_name'] = section.split('\n')[0]
+                    if section.split(',')[0] in COL_NAMES["first_col_names"]: # Tables with different first col name
                         df = pd.read_csv(io.StringIO(section), 
                             sep=',',
                             engine='python',        
                             on_bad_lines='skip',    
                             dtype=str,              
                             header=0)
+                        df.attrs['table_name'] = section.split(',')[0]
                     if not df.empty:
                         dataframes.append(df)
                     print(df.head())
                 except Exception as e:
                     print(f"Error processing section {i}: {e}")
                     continue
-        
         print(f"Extracted {len(dataframes)} tables from {file_path}")
         return dataframes
     except Exception as e:
         print(f"Error reading file {file_path}: {e}")
         return []
+
+def add_values(in_tables: list[pd.DataFrame], out_table: pd.DataFrame) -> None:
+    general_data = in_tables['general_data']
+    lot_summary = in_tables['Lot Summary']
+    input_wafer = in_tables['Input Wafer Vision Yield']
+    die_position_1 = in_tables['Die Position 1 Vision Yield'].T
+    die_position_2 = in_tables['Die Position 2 Vision Yield'].T
+
+    die_position_3 = in_tables['Die Position 3 Vision Yield'].T
+    die_position_4 = in_tables['Die Position 4 Vision Yield'].T
+    die_position_5 = in_tables['Die Position 5 Vision Yield'].T
+    bump_vision = in_tables['Bump Vision Yield']
+    sidewall_vision = in_tables['5S Sidewall Vision Yield']
+
+    pocket_b_position = in_tables['Pocket B Position Vision Yield']
+    in_pocket_b_position = in_tables['In Pocket B Position Vision Yield']
+    post_seal_b = in_tables['Post Seal B Vision Yield']
+    top_vision = in_tables['TopVision Vision Yield']
+    vision_3d = in_tables['3D Vision Yield']
+
+    infrared_ray_vision = in_tables['Infrared Ray Vision Yield']
+    tape_reel = in_tables['Tape & Reel - Reel A Summary']
+    wafer_info = in_tables['Wafer Information']
+    alarm_list = in_tables['Alarm List']
+
+    row = pd.DataFrame({
+
+        'Lot': '',
+        'Equip ID': '',
+        'Date':'',
+
+        # Lot Summary
+        'Qty Insp DP1': die_position_1.loc[die_position_1['Die Position 1 Vision Yield']=='Passed', 'Quantity'].iloc[0],
+        'Total Reject': '',
+        'Yield':'',
+
+        'Tape & Reel B Total': '',
+        'Reel 1': '',
+        'Reel 2': '',
+        'Reel 3': '',
+
+        # Die Position 1 Vision Yield
+        'Passed':'',
+         
+    })
+    pass
 
 # Function to read text files and extract values
 def process_csv_file(file_path) -> pd.DataFrame:
@@ -240,7 +392,11 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     print('October, 2025')
 
     list_files = list()
-    
+
+    out_df = pd.DataFrame(columns=pd.MultiIndex.from_tuples(OUTPUT_COLUMNS))
+    out_df = out_df.astype(str)
+
+
     #Select files we will process, only .txt files within the range dates
     print('Retrieving files from paths...')
     for path in PATHS_TO_SEARCH:
@@ -264,15 +420,13 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
         try:
             print(f"Processing file: {file}")
             file_path = Path(file)
+            in_tables = load_tables_from_csv(file_path)
             
-            # Use split_csv_by_empty_rows to get all tables from this file
-            tables_from_file = split_csv_by_empty_rows(file_path)
-            
-            if tables_from_file:
-                print(f"Found {len(tables_from_file)} tables in {file_path.name}")
+            if in_tables:
+                print(f"Tables: {len(in_tables)} | File: {file_path.name}")
                 
                 # Process each table from this file
-                for i, table_df in enumerate(tables_from_file):
+                for i, table_df in enumerate(in_tables):
                     print(f"  Table {i+1}: {table_df.shape} (rows × columns)")
                     print(f"  Columns: {list(table_df.columns)}")
                     
@@ -282,12 +436,14 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
                     table_df['table_number'] = i + 1
                     
                     all_dataframes.append(table_df)
+
+                    add_values(in_tables)
             else:
-                print(f"No valid tables found in {file_path.name}")
+                print(f"No tables found in {file_path.name}")
                         
         except Exception as e:
-            print(f"There was an error while processing {file}. Don't worry, will not include that file.") 
-            print(f"Error is {e}") 
+            print(f"Error while processing {file}. Will not include that file.") 
+            print(f"Error: {e}") 
             continue 
     
     # Check if we have any data to export
@@ -332,16 +488,6 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     return str(new_filename), len(list_files)
 
 #if __name__ == '__main__':
-    #Enter your dates here
-    
-    start_date = datetime.strptime('2025-06-15', "%Y-%m-%d").date()
-    end_date = datetime.strptime('2025-06-20', "%Y-%m-%d").date()
-    try:
-        path, file_count= main(start_date, end_date) 
-        print(f'Report created. Located at: {path}')  
-        print(f'Included {file_count} files in the report')  
-    except Exception as e:
-        print("Hubo un error. Corre de nuevo la app.", e)
     
 root = tk.Tk()
 root.geometry('300x200')
