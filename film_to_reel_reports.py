@@ -256,6 +256,7 @@ def load_tables_from_csv(file_path):
                 try:
                     if i == 0: # First Table
                         report_info = section.strip().split('\n')[:3]
+                        dataframes.append(report_info)
                         df = pd.read_csv(io.StringIO(section), 
                             sep=',',
                             skiprows=3,
@@ -294,28 +295,86 @@ def load_tables_from_csv(file_path):
         return []
 
 def add_values(in_tables: list[pd.DataFrame], out_table: pd.DataFrame) -> None:
+    report_info = in_tables['report_info']
+
     general_data = in_tables['general_data']
     lot_summary = in_tables['Lot Summary']
     input_wafer = in_tables['Input Wafer Vision Yield']
-    die_position_1 = in_tables['Die Position 1 Vision Yield'].T
+
+    die_position_1 = in_tables['Die Position 1 Vision Yield'].T # Transposed
+    die_position_1.columns = die_position_1.iloc[0] # First row as header
+    die_position_1 = die_position_1.iloc[1:] # Remove first row
+
     die_position_2 = in_tables['Die Position 2 Vision Yield'].T
+    die_position_2.columns = die_position_2.iloc[0]
+    die_position_2 = die_position_2.iloc[1:]
 
     die_position_3 = in_tables['Die Position 3 Vision Yield'].T
+    die_position_3.columns = die_position_3.iloc[0]
+    die_position_3 = die_position_3.iloc[1:]
+    
     die_position_4 = in_tables['Die Position 4 Vision Yield'].T
+    die_position_4.columns = die_position_4.iloc[0]
+    die_position_4 = die_position_4.iloc[1:]
+
     die_position_5 = in_tables['Die Position 5 Vision Yield'].T
-    bump_vision = in_tables['Bump Vision Yield']
-    sidewall_vision = in_tables['5S Sidewall Vision Yield']
+    die_position_5.columns = die_position_5.iloc[0]
+    die_position_5 = die_position_5.iloc[1:]
 
-    pocket_b_position = in_tables['Pocket B Position Vision Yield']
-    in_pocket_b_position = in_tables['In Pocket B Position Vision Yield']
-    post_seal_b = in_tables['Post Seal B Vision Yield']
-    top_vision = in_tables['TopVision Vision Yield']
-    vision_3d = in_tables['3D Vision Yield']
+    bump_vision = in_tables['Bump Vision Yield'].T
+    bump_vision.columns = bump_vision.iloc[0]
+    bump_vision = bump_vision.iloc[1:]
 
-    infrared_ray_vision = in_tables['Infrared Ray Vision Yield']
+    sidewall_vision = in_tables['5S Sidewall Vision Yield'].T
+    sidewall_vision.columns = sidewall_vision.iloc[0]
+    sidewall_vision = sidewall_vision.iloc[1:]
+
+    pocket_b_position = in_tables['Pocket B Position Vision Yield'].T
+    pocket_b_position.columns = pocket_b_position.iloc[0]
+    pocket_b_position = pocket_b_position.iloc[1:]
+
+    in_pocket_b_position = in_tables['In Pocket B Position Vision Yield'].T
+    in_pocket_b_position.columns = in_pocket_b_position.iloc[0]
+    in_pocket_b_position = in_pocket_b_position.iloc[1:]
+
+    post_seal_b = in_tables['Post Seal B Vision Yield'].T
+    post_seal_b.columns = post_seal_b.iloc[0]
+    post_seal_b = post_seal_b.iloc[1:]
+
+    top_vision = in_tables['TopVision Vision Yield'].T
+    top_vision.columns = top_vision.iloc[0]
+    top_vision = top_vision.iloc[1:]
+
+    vision_3d = in_tables['3D Vision Yield'].T
+    vision_3d.columns = vision_3d.iloc[0]
+    vision_3d = vision_3d.iloc[1:]
+
+    infrared_ray_vision = in_tables['Infrared Ray Vision Yield'].T
+    infrared_ray_vision.columns = infrared_ray_vision.iloc[0]
+    infrared_ray_vision = infrared_ray_vision.iloc[1:]
+
     tape_reel = in_tables['Tape & Reel - Reel A Summary']
     wafer_info = in_tables['Wafer Information']
     alarm_list = in_tables['Alarm List']
+
+    # Add values
+    out_table[('', 'Lot')] = report_info[1]
+    out_table[('', 'Equip ID')] = report_info[0]
+    out_table[('', 'Date')] = report_info[2]
+
+    out_table['Die Position 1 Vision Yield'] = die_position_1.iloc[0].values
+    out_table['Die Position 2 Vision Yield'] = die_position_2.iloc[0].values
+    out_table['Die Position 3 Vision Yield'] = die_position_3.iloc[0].values
+    out_table['Die Position 4 Vision Yield'] = die_position_4.iloc[0].values
+    out_table['Die Position 5 Vision Yield'] = die_position_5.iloc[0].values
+    out_table['Bump Vision Yield'] = bump_vision.iloc[0].values
+    out_table['5S Sidewall Vision Yield'] = sidewall_vision.iloc[0].values
+    out_table['Pocket B Position Vision Yield'] = pocket_b_position.iloc[0].values
+    out_table['In Pocket B Position Vision Yield'] = in_pocket_b_position.iloc[0].values
+    out_table['Post Seal B Vision Yield'] = post_seal_b.iloc[0].values
+    out_table['TopVision Vision Yield'] = top_vision.iloc[0].values
+    out_table['3D Vision Yield'] = vision_3d.iloc[0].values
+    out_table['Infrared Ray Vision Yield'] = infrared_ray_vision.iloc[0].values
 
     row = pd.DataFrame({
 
