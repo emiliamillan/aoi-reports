@@ -87,7 +87,7 @@ OUTPUT_COLUMNS = [
 
     ('Lot Summary', 'Qty Insp DP1'),
     ('Lot Summary', 'Total Reject'),
-    ('Lot Summary', 'Yield'),
+    ('Lot Summary', 'Yield %'),
 
     ('', 'Tape & Reel B Total'),
     ('', 'Reel 1'),
@@ -248,15 +248,16 @@ def load_tables_from_csv(file_path):
             content = file.read()
         
         # Split by double newlines (empty rows)
-        table_sections = content.split('\n\n')
+        csv_tables = content.split('\n\n')
         
-        dataframes = []
-        for i, section in enumerate(table_sections):
+        dataframes = dict()
+        for i, section in enumerate(csv_tables):
             if section.strip():  # Skip empty sections
                 try:
                     if i == 0: # First Table
-                        report_info = section.strip().split('\n')[:3]
-                        dataframes.append(report_info)
+                        report_info = pd.Series(section.strip().split('\n')[:3]).to_frame()
+                        dataframes["report_info"] = report_info
+
                         df = pd.read_csv(io.StringIO(section), 
                             sep=',',
                             skiprows=3,
@@ -264,8 +265,8 @@ def load_tables_from_csv(file_path):
                             on_bad_lines='skip',    # Skip problematic lines
                             dtype=str,              # Read everything as strings first
                             header=None)
-                        df.attrs['table_name'] = 'general_data'
-                    if section.split('\n')[0] in COL_NAMES["table_names"]: # Tables with name
+                        dataframes["general_data"] = df
+                    if section.split('\n')[0] in COL_NAMES["table_names"]: # Tables with table name
                         df = pd.read_csv(io.StringIO(section), 
                             sep=',',
                             skiprows=1,
@@ -273,17 +274,15 @@ def load_tables_from_csv(file_path):
                             on_bad_lines='skip',    
                             dtype=str,              
                             header=0)
-                        df.attrs['table_name'] = section.split('\n')[0]
-                    if section.split(',')[0] in COL_NAMES["first_col_names"]: # Tables with different first col name
+                        dataframes[section.split('\n')[0]] = df
+                    if section.split(',')[0] in COL_NAMES["first_col_names"]: # Tables where name is on first col
                         df = pd.read_csv(io.StringIO(section), 
                             sep=',',
                             engine='python',        
                             on_bad_lines='skip',    
                             dtype=str,              
                             header=0)
-                        df.attrs['table_name'] = section.split(',')[0]
-                    if not df.empty:
-                        dataframes.append(df)
+                        dataframes[section.split(',')[0]] = df
                     print(df.head())
                 except Exception as e:
                     print(f"Error processing section {i}: {e}")
@@ -294,7 +293,7 @@ def load_tables_from_csv(file_path):
         print(f"Error reading file {file_path}: {e}")
         return []
 
-def add_values(in_tables: list[pd.DataFrame], out_table: pd.DataFrame) -> None:
+def add_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, next_index: int) -> pd.DataFrame:
     report_info = in_tables['report_info']
 
     general_data = in_tables['general_data']
@@ -329,11 +328,11 @@ def add_values(in_tables: list[pd.DataFrame], out_table: pd.DataFrame) -> None:
     sidewall_vision.columns = sidewall_vision.iloc[0]
     sidewall_vision = sidewall_vision.iloc[1:]
 
-    pocket_b_position = in_tables['Pocket B Position Vision Yield'].T
+    pocket_b_position = in_tables['Pocket Position B Vision Yield'].T
     pocket_b_position.columns = pocket_b_position.iloc[0]
     pocket_b_position = pocket_b_position.iloc[1:]
 
-    in_pocket_b_position = in_tables['In Pocket B Position Vision Yield'].T
+    in_pocket_b_position = in_tables['In Pocket B Vision Yield'].T
     in_pocket_b_position.columns = in_pocket_b_position.iloc[0]
     in_pocket_b_position = in_pocket_b_position.iloc[1:]
 
@@ -353,50 +352,92 @@ def add_values(in_tables: list[pd.DataFrame], out_table: pd.DataFrame) -> None:
     infrared_ray_vision.columns = infrared_ray_vision.iloc[0]
     infrared_ray_vision = infrared_ray_vision.iloc[1:]
 
-    tape_reel = in_tables['Tape & Reel - Reel A Summary']
-    wafer_info = in_tables['Wafer Information']
-    alarm_list = in_tables['Alarm List']
+    #tape_reel = in_tables['Tape & Reel - Reel A Summary']
+    #wafer_info = in_tables['Wafer Information']
+    #alarm_list = in_tables['Alarm List']
 
     # Add values
-    out_table[('', 'Lot')] = report_info[1]
-    out_table[('', 'Equip ID')] = report_info[0]
-    out_table[('', 'Date')] = report_info[2]
+    out_table.loc[next_index,('', 'Lot')] = report_info.iloc[1, 0]      # Row 1, Column 0
+    out_table.loc[next_index,('', 'Equip ID')] = report_info.iloc[0, 0]  # Row 0, Column 0
+    out_table.loc[next_index,('', 'Date')] = report_info.iloc[2, 0]      # Row 2, Column 0
 
-    out_table['Die Position 1 Vision Yield'] = die_position_1.iloc[0].values
-    out_table['Die Position 2 Vision Yield'] = die_position_2.iloc[0].values
-    out_table['Die Position 3 Vision Yield'] = die_position_3.iloc[0].values
-    out_table['Die Position 4 Vision Yield'] = die_position_4.iloc[0].values
-    out_table['Die Position 5 Vision Yield'] = die_position_5.iloc[0].values
-    out_table['Bump Vision Yield'] = bump_vision.iloc[0].values
-    out_table['5S Sidewall Vision Yield'] = sidewall_vision.iloc[0].values
-    out_table['Pocket B Position Vision Yield'] = pocket_b_position.iloc[0].values
-    out_table['In Pocket B Position Vision Yield'] = in_pocket_b_position.iloc[0].values
-    out_table['Post Seal B Vision Yield'] = post_seal_b.iloc[0].values
-    out_table['TopVision Vision Yield'] = top_vision.iloc[0].values
-    out_table['3D Vision Yield'] = vision_3d.iloc[0].values
-    out_table['Infrared Ray Vision Yield'] = infrared_ray_vision.iloc[0].values
+    out_table.loc[next_index, 'Die Position 1 Vision Yield'] = die_position_1.iloc[0].values
+    out_table.loc[next_index, 'Die Position 2 Vision Yield'] = die_position_2.iloc[0].values
+    out_table.loc[next_index, 'Die Position 3 Vision Yield'] = die_position_3.iloc[0].values
+    out_table.loc[next_index, 'Die Position 4 Vision Yield'] = die_position_4.iloc[0].values
+    out_table.loc[next_index, 'Die Position 5 Vision Yield'] = die_position_5.iloc[0].values
+    out_table.loc[next_index, 'Bump Vision Yield'] = bump_vision.iloc[0].values
+    out_table.loc[next_index, '5S Sidewall Vision Yield'] = sidewall_vision.iloc[0].values
+    out_table.loc[next_index, 'Pocket Position B Vision Yield'] = pocket_b_position.iloc[0].values
+    out_table.loc[next_index, 'In Pocket B Vision Yield'] = in_pocket_b_position.iloc[0].values
+    out_table.loc[next_index, 'Post Seal B Vision Yield'] = post_seal_b.iloc[0].values
+    out_table.loc[next_index, 'TopVision Vision Yield'] = top_vision.iloc[0].values
+    out_table.loc[next_index, '3D Vision Yield'] = vision_3d.iloc[0].values
+    out_table.loc[next_index, 'Infrared Ray Vision Yield'] = infrared_ray_vision.iloc[0].values
 
-    row = pd.DataFrame({
+    # Calculate 'Total Rejects'
+    columns_to_exclude = ['Passed', 'TOTAL']
 
-        'Lot': '',
-        'Equip ID': '',
-        'Date':'',
+    columns_to_sum = [col for col in die_position_1.columns if col not in columns_to_exclude]
+    die_position_1_sum = die_position_1.iloc[0][columns_to_sum].astype(int).sum()
+    columns_to_sum = [col for col in die_position_2.columns if col not in columns_to_exclude]
+    die_position_2_sum = die_position_2.iloc[0][columns_to_sum].astype(int).sum()
 
-        # Lot Summary
-        'Qty Insp DP1': die_position_1.loc[die_position_1['Die Position 1 Vision Yield']=='Passed', 'Quantity'].iloc[0],
-        'Total Reject': '',
-        'Yield':'',
+    columns_to_sum = [col for col in die_position_3.columns if col not in columns_to_exclude]
+    die_position_3_sum = die_position_3.iloc[0][columns_to_sum].astype(int).sum()
 
-        'Tape & Reel B Total': '',
-        'Reel 1': '',
-        'Reel 2': '',
-        'Reel 3': '',
+    columns_to_sum = [col for col in die_position_4.columns if col not in columns_to_exclude]
+    die_position_4_sum = die_position_4.iloc[0][columns_to_sum].astype(int).sum()
 
-        # Die Position 1 Vision Yield
-        'Passed':'',
-         
-    })
-    pass
+    columns_to_sum = [col for col in die_position_5.columns if col not in columns_to_exclude]
+    die_position_5_sum = die_position_5.iloc[0][columns_to_sum].astype(int).sum()
+
+    columns_to_sum = [col for col in bump_vision.columns if col not in columns_to_exclude]
+    bump_vision_sum = bump_vision.iloc[0][columns_to_sum].astype(int).sum()
+
+    columns_to_sum = [col for col in sidewall_vision.columns if col not in columns_to_exclude]
+    sidewall_vision_sum = sidewall_vision.iloc[0][columns_to_sum].astype(int).sum()
+
+    columns_to_sum = [col for col in pocket_b_position.columns if col not in columns_to_exclude]
+    pocket_b_position_sum = pocket_b_position.iloc[0][columns_to_sum].astype(int).sum()
+
+    columns_to_sum = [col for col in in_pocket_b_position.columns if col not in columns_to_exclude]
+    in_pocket_b_position_sum = in_pocket_b_position.iloc[0][columns_to_sum].astype(int).sum()
+
+    columns_to_sum = [col for col in post_seal_b.columns if col not in columns_to_exclude]
+    post_seal_b_sum = post_seal_b.iloc[0][columns_to_sum].astype(int).sum()
+
+    columns_to_sum = [col for col in top_vision.columns if col not in columns_to_exclude]
+    top_vision_sum = top_vision.iloc[0][columns_to_sum].astype(int).sum()
+
+    columns_to_sum = [col for col in vision_3d.columns if col not in columns_to_exclude]
+    vision_3d_sum = vision_3d.iloc[0][columns_to_sum].astype(int).sum()
+
+    columns_to_sum = [col for col in infrared_ray_vision.columns if col not in columns_to_exclude]
+    infrared_ray_vision_sum = infrared_ray_vision.iloc[0][columns_to_sum].astype(int).sum()
+
+    # Add main summary values
+    out_table.loc[next_index, ('Lot Summary','Qty Insp DP1')] = die_position_1['Passed'].iloc[0]
+    out_table.loc[next_index, ('Lot Summary','Total Reject')] = (
+        die_position_1_sum +
+        die_position_2_sum +
+        die_position_3_sum +
+        die_position_4_sum +
+        die_position_5_sum +
+        bump_vision_sum +
+        sidewall_vision_sum +
+        pocket_b_position_sum +
+        in_pocket_b_position_sum +
+        post_seal_b_sum +
+        top_vision_sum +
+        vision_3d_sum +
+        infrared_ray_vision_sum
+    )
+    passed = float(out_table.loc[next_index, ('Lot Summary','Qty Insp DP1')])
+    failed = float(out_table.loc[next_index, ('Lot Summary','Total Reject')])
+    out_table.loc[next_index, ('Lot Summary','Yield %')] = (( passed - failed)/passed*100).__round__(2)
+
+    return out_table
 
 # Function to read text files and extract values
 def process_csv_file(file_path) -> pd.DataFrame:
@@ -450,11 +491,9 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     print('By: Emilia Millan ')
     print('October, 2025')
 
-    list_files = list()
-
+    files = list()
     out_df = pd.DataFrame(columns=pd.MultiIndex.from_tuples(OUTPUT_COLUMNS))
     out_df = out_df.astype(str)
-
 
     #Select files we will process, only .txt files within the range dates
     print('Retrieving files from paths...')
@@ -466,16 +505,16 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
             file_path = os.path.join(path, filename)
             last_modified_time = get_last_modified_time(file_path)
             if start_date <= last_modified_time <= end_date:
-                list_files.append(file_path)
+                files.append(file_path)
 
     print('Generating report...')
     all_dataframes = []  # Store all dataframes from all files
     
-    if not list_files:
+    if not files:
         print("No files found in the specified date range.")
         return None, 0
     
-    for file in list_files:
+    for file in files:
         try:
             print(f"Processing file: {file}")
             file_path = Path(file)
@@ -483,20 +522,8 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
             
             if in_tables:
                 print(f"Tables: {len(in_tables)} | File: {file_path.name}")
-                
-                # Process each table from this file
-                for i, table_df in enumerate(in_tables):
-                    print(f"  Table {i+1}: {table_df.shape} (rows × columns)")
-                    print(f"  Columns: {list(table_df.columns)}")
-                    
-                    # Add source info to the dataframe
-                    table_df = table_df.copy()
-                    table_df['source_file'] = file_path.name
-                    table_df['table_number'] = i + 1
-                    
-                    all_dataframes.append(table_df)
-
-                    add_values(in_tables)
+                print(f'Adding values...')
+                out_df = add_values(in_tables, out_df, len(out_df))
             else:
                 print(f"No tables found in {file_path.name}")
                         
@@ -506,12 +533,12 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
             continue 
     
     # Check if we have any data to export
-    if df is None or df.empty:
+    if out_df is None or out_df.empty:
         print("No data to export. Check your date range or file contents.")
-        return None, len(list_files)
+        return None, len(files)
     
     #remove whitespaces
-    df = df.map(lambda x: x.strip() if isinstance(x, str) else x)    
+    out_df = out_df.map(lambda x: x.strip() if isinstance(x, str) else x)
 
     #Export dataframe
     output_dir = Path.cwd() / 'report_app_MI-28'
@@ -519,24 +546,12 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     
     new_filename = output_dir / f'report_{start_date.strftime("%Y-%m-%d")}_{end_date.strftime("%Y-%m-%d")}.csv'
     
-    # Only apply column headers if we have the expected structure
-    try:
-        if len(df.columns) >= 147:
-            num = 147
-            col_names = df.columns.to_list()
-            df.columns = VISION_COLUMNS[:num-1] + col_names[num-1:]
-            
-            # Data cleaning
-            df = df.iloc[:, :num-1]
-            df = df.drop(columns=[col for col in df.columns if col == '-'], errors='ignore')
-    except Exception as e:
-        print(f"Warning: Could not apply standard column headers: {e}")
     
     print("Data preview:")
-    print(df.head())
-    print(f"Data shape: {df.shape}")
-    
-    df.to_csv(new_filename, index=False)
+    print(out_df.head())
+    print(f"Data shape: {out_df.shape}")
+
+    out_df.to_csv(new_filename, index=False)
     print(f'Created at: {new_filename}')
     
     try:
@@ -544,7 +559,7 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     except Exception as e:
         print(f"Could not open Excel: {e}")
     
-    return str(new_filename), len(list_files)
+    return str(new_filename), len(files)
 
 #if __name__ == '__main__':
     
