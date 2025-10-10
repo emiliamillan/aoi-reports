@@ -1,4 +1,5 @@
 from datetime import datetime
+from logging import root
 import os
 from pathlib import Path
 import subprocess
@@ -184,42 +185,42 @@ def load_tables_from_csv(file_path):
         
         dataframes = dict()
         for i, section in enumerate(csv_tables):
-            if section.strip():  # Skip empty sections
-                try:
-                    if i == 0: # First Table
-                        report_info = pd.Series(section.strip().split('\n')[:3]).to_frame()
-                        dataframes["report_info"] = report_info
+            if not section.strip(): continue  # Skip empty sections
+            try:
+                if i == 0: # First Table | Edge case
+                    report_info = pd.Series(section.strip().split('\n')[:3]).to_frame()
+                    dataframes["report_info"] = report_info
 
-                        df = pd.read_csv(io.StringIO(section), 
-                            sep=',',
-                            skiprows=3,
-                            engine='python',        # More flexible than C engine
-                            on_bad_lines='skip',    # Skip problematic lines
-                            dtype=str,              # Read everything as strings first
-                            header=None)
-                        dataframes["general_data"] = df
-                    if section.split('\n')[0] in COL_NAMES["table_names"]: # Tables with table name
-                        df = pd.read_csv(io.StringIO(section), 
-                            sep=',',
-                            skiprows=1,
-                            engine='python',        
-                            on_bad_lines='skip',    
-                            dtype=str,              
-                            header=0)
-                        dataframes[section.split('\n')[0]] = df
-                    if section.split(',')[0] in COL_NAMES["first_col_names"]: # Tables where name is on first col
-                        df = pd.read_csv(io.StringIO(section), 
-                            sep=',',
-                            engine='python',        
-                            on_bad_lines='skip',    
-                            dtype=str,              
-                            header=0)
-                        dataframes[section.split(',')[0]] = df
-                    print(df.head())
-                except Exception as e:
-                    print(f"Error processing section {i}: {e}")
-                    continue
-        print(f"Extracted {len(dataframes)} tables from {file_path}")
+                    df = pd.read_csv(io.StringIO(section), 
+                        sep=',',
+                        skiprows=3,
+                        engine='python',        # More flexible than C engine
+                        on_bad_lines='skip',    # Skip problematic lines
+                        dtype=str,              # Read everything as strings first
+                        header=None)
+                    dataframes["general_data"] = df
+                if section.split('\n')[0] in COL_NAMES["table_names"]: # Tables with table name
+                    df = pd.read_csv(io.StringIO(section), 
+                        sep=',',
+                        skiprows=1,
+                        engine='python',        
+                        on_bad_lines='skip',    
+                        dtype=str,              
+                        header=0)
+                    dataframes[section.split('\n')[0]] = df
+                if section.split(',')[0] in COL_NAMES["first_col_names"]: # Tables where name is on first col
+                    df = pd.read_csv(io.StringIO(section), 
+                        sep=',',
+                        engine='python',        
+                        on_bad_lines='skip',    
+                        dtype=str,              
+                        header=0)
+                    dataframes[section.split(',')[0]] = df
+                print(df.head())
+            except Exception as e:
+                print(f"Error reading table: {e}")
+                continue
+        #print(f"Extracted {len(dataframes)} tables from {file_path}")
         return dataframes
     except Exception as e:
         print(f"Error reading file {file_path}: {e}")
@@ -400,16 +401,12 @@ def get_last_modified_time(file_path):
         return None
 
 def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
-    print('Starting Film2Reel App...')
-    print('By: Emilia Millan ')
-    print('October, 2025')
-
+    """Main function to process files and generate report"""
     files = list()
-    out_df = pd.DataFrame(columns=pd.MultiIndex.from_tuples(OUTPUT_COLUMNS))
-    out_df = out_df.astype(str)
+    out_df = pd.DataFrame(columns=pd.MultiIndex.from_tuples(OUTPUT_COLUMNS), dtype=str)
 
     #Select files we will process, only .txt files within the range dates
-    print('Retrieving files from paths...')
+    print('Searching for files in Paths...')
     for path in PATHS_TO_SEARCH:
         os.walk(path)
         for filename in os.listdir(path):
@@ -420,7 +417,7 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
             if start_date <= last_modified_time <= end_date:
                 files.append(file_path)
 
-    print('Generating report...')    
+    print('Extracting info from files...')
     if not files:
         print("No files found in the specified date range.")
         return None, 0
@@ -432,8 +429,8 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
             in_tables = load_tables_from_csv(file_path)
             
             if in_tables:
-                print(f"Tables: {len(in_tables)} | File: {file_path.name}")
-                print(f'Adding values...')
+                #print(f"Tables: {len(in_tables)} | File: {file_path.name}")
+                #print(f'Adding values...')
                 out_df = add_values(in_tables, out_df, len(out_df))
             else:
                 print(f"No tables found in {file_path.name}")
@@ -448,7 +445,7 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
         print("No data to export. Check your date range or file contents.")
         return None, len(files)
     
-    #remove whitespaces
+    # Remove whitespaces
     out_df = out_df.map(lambda x: x.strip() if isinstance(x, str) else x)
 
     # Fix column names
@@ -477,13 +474,13 @@ def create_gui():
     """Create and run the GUI application"""
     root = tk.Tk()
     root.geometry('300x200')
-    root.title('Reporte MI-28')
+    root.title('Film2Reel App')
 
     name_label = ttk.Label(root, text='Start Date (yyyy-mm-dd):')
     name_label.pack(pady=2)
 
     start_entry = ttk.Entry(root)
-    start_entry.insert(0, '2025-10-05')
+    #start_entry.insert(0, '2025-10-05') # For testing
     start_entry.pack(pady=5)
     start_entry.focus()
 
@@ -491,7 +488,7 @@ def create_gui():
     date_label.pack(pady=2)
 
     end_entry = ttk.Entry(root)
-    end_entry.insert(0, '2025-10-07')
+    #end_entry.insert(0, '2025-10-07') # For testing
     end_entry.pack(pady=5)
 
     def entryhandler():
@@ -518,6 +515,17 @@ def create_gui():
         ipady=5,
         expand=True
     )
+
+    # Create a frame for bottom labels
+    bottom_frame = ttk.Frame(root)
+    bottom_frame.pack(side='bottom', fill='x', padx=10, pady=5)
+
+    # Add author and date labels stacked vertically in the bottom frame
+    author_label = ttk.Label(bottom_frame, text='Author: Emilia Millan')
+    author_label.pack(side='top', anchor='w')
+    
+    creation_date_label = ttk.Label(bottom_frame, text='October, 2025')
+    creation_date_label.pack(side='top', anchor='w')
 
     root.mainloop()
 
