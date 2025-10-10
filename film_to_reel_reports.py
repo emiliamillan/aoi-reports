@@ -3,81 +3,13 @@ import os
 from pathlib import Path
 import subprocess
 import pandas as pd
-import re
 import tkinter as tk
 from tkinter import ttk
 import io
 
-
 PATHS_TO_SEARCH = [
     #'\\\\mexhome03\\Data\\MC Back End\\Generic\\Molding and Singulation\\Emilia M\\mi28 reportes'
     Path.cwd() / 'in_reports' / 'Mi02', # Local tests
-    ]
-
-
-VISION_COLUMNS = [
-    'LOT', 'FROM', 
-    #Lot Summary
-    #remover -- for correct data matrix, -- is only foe lot summary correct data
-    '-','Input Wafer Total','Rejected Dice','Tape & Reel B Total','Reject Tray Total',
-    
-    # Input Wafer Vision Yield
-    'Passed','Empty Failed','Others Failed','Angle Failed','Pitch Failed','Chip Failed',
-    'Contamination Failed''Crack Failed','Bump Failed','Pad Failed','Probe Mark Failed', '-','TOTAL', 
-
-    # Die Position 1 Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Angle Failed','TOTAL',
-
-    #Die Position 2 Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Angle Failed','TOTAL',
-
-    #Die Position 3 Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Angle Failed','TOTAL',
-
-    #Die Position 4 Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Angle Failed','TOTAL',
-
-    #Die Position 5 Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Angle Failed','TOTAL',
-
-    #Bump Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Angle Failed','Die Sawn Failed','Chip In Failed',
-    'Chip Out Failed','Contamination Failed','Crack Failed','Die Size Failed','SubROI Failed','Spec Failed',
-    'Bump Failed','Pad Failed','TOTAL',
-
-    #5S Sidewall Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Angle Failed','Chip Failed','Contamination Failed',
-    'Crack Failed','Bump Failed','TOTAL',
-
-    #Pocket Position B Vision Yield
-    '-','Passed','Others Failed','TOTAL',
-
-    #In Pocket B Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Angle Failed','Chip In Failed','Chip Out Failed',
-    'Contamination Failed','Crack Failed','Adhesive Failed','Edge Failed','Die Size Failed',
-    'SubROI Failed','Marking Failed','Orientation Failed','No Mark Failed','2D Code Failed',
-    'Copper Exposed Failed','TOTAL',
-
-    #Post Seal B Vision Yield
-    '-','Empty Failed','Others Failed','Angle Failed','Chip Failed','Crack Failed','Contamination Failed',
-    'Marking Failed','Top Layer Seal Broken','Bottom Layer Seal Broken','Both Layer Seal Broken',
-    'Top Layer Seal Limit Exceeded','Bottom Layer Seal Limit Exceeded','Both Layer Seal Limit Exceeded',
-    'Top Layer Seal Width Inconsistency','Bottom Layer Seal Width Inconsistency',
-    'Both Layer Seal Width Inconsistency','Relative Seal Width Inconsistency','TOTAL',
-
-    #TopVision Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Chip Failed','Contamination Failed','Crack Failed',
-    'Marking Failed','Discolouration Failed','Die Size Failed','TOTAL',
-
-    #3D Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Bump Height Failed','Warpage Failed','Slanted Failed','TOTAL',
-
-    #Infrared Ray Vision Yield
-    '-','Passed','Empty Failed','Others Failed','Angle Failed','Chip Failed','Contamination Failed','Crack Failed',
-    'Marking Failed','Delamination','TOTAL',
-
-    #Reels 
-    'Reel 1', 'Count 1', 'Reel 2', 'Count 2',
     ]
 
 OUTPUT_COLUMNS = [
@@ -87,7 +19,7 @@ OUTPUT_COLUMNS = [
 
     ('Lot Summary', 'Qty Insp DP1'),
     ('Lot Summary', 'Total Reject'),
-    ('Lot Summary', 'Yield %'),
+    ('Lot Summary', 'Yield'),
 
     ('', 'Tape & Reel B Total'),
     ('', 'Reel 1'),
@@ -232,12 +164,12 @@ OUTPUT_COLUMNS = [
 ]
 
 COL_NAMES = {
-    "first_col_names": [ "Lot Summary","Input Wafer Vision Yield", "Die Position 1 Vision Yield", "Die Position 2 Vision Yield", 
+    "first_col_names": [ "Input Wafer Vision Yield", "Die Position 1 Vision Yield", "Die Position 2 Vision Yield", 
     "Die Position 3 Vision Yield", "Die Position 4 Vision Yield", "Die Position 5 Vision Yield", "Bump Vision Yield", 
     "5S Sidewall Vision Yield", "Pocket Position B Vision Yield", "In Pocket B Vision Yield", "Post Seal B Vision Yield", "TopVision Vision Yield",
     "3D Vision Yield", "Infrared Ray Vision Yield"],
     
-    "table_names": [ "Tape & Reel - Reel A Summary", "Wafer Information", "Alarm List"]
+    "table_names": [ "Wafer Information,"]
 }
 
 
@@ -296,10 +228,6 @@ def load_tables_from_csv(file_path):
 def add_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, next_index: int) -> pd.DataFrame:
     report_info = in_tables['report_info']
 
-    general_data = in_tables['general_data']
-    lot_summary = in_tables['Lot Summary']
-    input_wafer = in_tables['Input Wafer Vision Yield']
-
     die_position_1 = in_tables['Die Position 1 Vision Yield'].T # Transposed
     die_position_1.columns = die_position_1.iloc[0] # First row as header
     die_position_1 = die_position_1.iloc[1:] # Remove first row
@@ -352,9 +280,7 @@ def add_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, next
     infrared_ray_vision.columns = infrared_ray_vision.iloc[0]
     infrared_ray_vision = infrared_ray_vision.iloc[1:]
 
-    #tape_reel = in_tables['Tape & Reel - Reel A Summary']
-    #wafer_info = in_tables['Wafer Information']
-    #alarm_list = in_tables['Alarm List']
+    wafer_info = in_tables['Wafer Information,']
 
     # Add values
     out_table.loc[next_index,('', 'Lot')] = report_info.iloc[1, 0]      # Row 1, Column 0
@@ -435,52 +361,39 @@ def add_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, next
     )
     passed = float(out_table.loc[next_index, ('Lot Summary','Qty Insp DP1')])
     failed = float(out_table.loc[next_index, ('Lot Summary','Total Reject')])
-    out_table.loc[next_index, ('Lot Summary','Yield %')] = (( passed - failed)/passed*100).__round__(2)
+    out_table.loc[next_index, ('Lot Summary','Yield')] = str((( passed - failed)/passed*100).__round__(2)) + '%'
+
+    # Reel counts
+    r1 = wafer_info[wafer_info['Reel No'] == '1']['Unit Count'].astype(int).sum()
+    r2 = wafer_info[wafer_info['Reel No'] == '2']['Unit Count'].astype(int).sum()
+    r3 = wafer_info[wafer_info['Reel No'] == '3']['Unit Count'].astype(int).sum()
+
+    out_table.loc[next_index,('', 'Reel 1')] = r1
+    out_table.loc[next_index,('', 'Reel 2')] = r2
+    out_table.loc[next_index,('', 'Reel 3')] = r3
+    out_table.loc[next_index,('', 'Tape & Reel B Total')] = r1+r2+r3
 
     return out_table
 
-# Function to read text files and extract values
-def process_csv_file(file_path) -> pd.DataFrame:
-    with open(file_path, 'r', encoding = 'utf-8') as file:
-        content = file.read()
+def fix_column_names(df: pd.DataFrame) -> pd.DataFrame:
+    "Removes duplicate category headers from MultiIndex columns"
+    # Clean up MultiIndex columns - remove duplicate category headers
+    new_columns = []
+    prev_category = None
 
-    #turn csv into dataframe
-    boundary1 = "Alarm Type Selection,Failure"
-    index1 = content.find(boundary1)
-    section1 = content[:index1]
-    #LOT
-    wanted1 = re.findall(r'-\s(\w+.?\w+)\s-', section1)
-    #FROM
-    wanted2 = re.findall(r'\d{1,2}\/\d{1,2}\/\d{4}\s+\d{1,2}:\d{2}:\d{2}\s+[AP]M.*$', section1)
+    for category, column in df.columns:
+        if category != prev_category:
+            new_columns.append((category, column))
+            prev_category = category
+        else:
+            new_columns.append(('', column))  # Empty string for duplicate categories
 
-    holder = pd.Series(wanted1)
-    holder2 = pd.Series(wanted2)
-    
-    #Rest of columns
-    ## use #boundary2 = "Input Wafer Vision Yield,Quantity,Yield (%),Overall Yield (%)" for correct data info
-    boundary2 = "Input Wafer Vision Yield,Quantity,Yield (%),Overall Yield (%)"
-
-     ## use #boundary2 for onlu lot summary correct data
-    ##boundary2 = " ,Quantity,Overall Yield,Previous Lot Dice"
-    index2 = content.find(boundary2)
-    section2 = content[index2:]
-
-
-    initial = pd.read_csv(io.StringIO(section2))
-    #print(initial)
-    filtered = initial.iloc[:, 1:2]
-    #print(filtered)
-    rotated = filtered.T.reset_index(drop=True)
-    #print(rotated)
-    semifinal = pd.concat([holder, holder2, rotated], ignore_index=True, axis=1)
-    semifinal = pd.DataFrame(semifinal)
-    #print(semifinal)
-    return semifinal
+    df.columns = pd.MultiIndex.from_tuples(new_columns)
+    return df
 
 def get_last_modified_time(file_path):
     try:
         modification_time = os.path.getmtime(file_path)
-        # Convert the timestamp to a datetime object
         last_modified_datetime = datetime.fromtimestamp(modification_time)
         return last_modified_datetime.date()
     except FileNotFoundError:
@@ -507,9 +420,7 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
             if start_date <= last_modified_time <= end_date:
                 files.append(file_path)
 
-    print('Generating report...')
-    all_dataframes = []  # Store all dataframes from all files
-    
+    print('Generating report...')    
     if not files:
         print("No files found in the specified date range.")
         return None, 0
@@ -540,15 +451,15 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     #remove whitespaces
     out_df = out_df.map(lambda x: x.strip() if isinstance(x, str) else x)
 
+    # Fix column names
+    out_df = fix_column_names(out_df)
+
     #Export dataframe
     output_dir = Path.cwd() / 'report_app_MI-28'
     output_dir.mkdir(exist_ok=True)  # Create directory if it doesn't exist
     
     new_filename = output_dir / f'report_{start_date.strftime("%Y-%m-%d")}_{end_date.strftime("%Y-%m-%d")}.csv'
     
-    
-    print("Data preview:")
-    print(out_df.head())
     print(f"Data shape: {out_df.shape}")
 
     out_df.to_csv(new_filename, index=False)
@@ -561,41 +472,54 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     
     return str(new_filename), len(files)
 
-#if __name__ == '__main__':
-    
-root = tk.Tk()
-root.geometry('300x200')
-root.title('Reporte MI-28')
 
-name_label = ttk.Label(root, text='Start Date (yyyy-mm-dd):')
-name_label.pack(pady=2)
+def create_gui():
+    """Create and run the GUI application"""
+    root = tk.Tk()
+    root.geometry('300x200')
+    root.title('Reporte MI-28')
 
-start_entry = ttk.Entry(root)
-start_entry.insert(0, '2025-10-05')
-start_entry.pack(pady=5)
-start_entry.focus()
+    name_label = ttk.Label(root, text='Start Date (yyyy-mm-dd):')
+    name_label.pack(pady=2)
 
-date_label = ttk.Label(root, text='End Date (yyyy-mm-dd):')
-date_label.pack(pady=2)
+    start_entry = ttk.Entry(root)
+    start_entry.insert(0, '2025-10-05')
+    start_entry.pack(pady=5)
+    start_entry.focus()
 
-end_entry = ttk.Entry(root)
-end_entry.insert(0, '2025-10-07')
-end_entry.pack(pady=5)
+    date_label = ttk.Label(root, text='End Date (yyyy-mm-dd):')
+    date_label.pack(pady=2)
 
-def entryhandler():
-        start, end = start_entry.get(), end_entry.get()
-        main(datetime.strptime(start, "%Y-%m-%d").date(), datetime.strptime(end, "%Y-%m-%d").date())
+    end_entry = ttk.Entry(root)
+    end_entry.insert(0, '2025-10-07')
+    end_entry.pack(pady=5)
 
-run_button = ttk.Button(
-    root,
-    text='Run',
-    command=lambda: entryhandler()
-)
+    def entryhandler():
+        try:
+            start, end = start_entry.get(), end_entry.get()
+            result = main(datetime.strptime(start, "%Y-%m-%d").date(), datetime.strptime(end, "%Y-%m-%d").date())
+            if result:
+                print("Report generated successfully!")
+            else:
+                print("No report generated. Check your date range.")
+        except ValueError as e:
+            print(f"Invalid date format: {e}")
+        except Exception as e:
+            print(f"Error generating report: {e}")
 
-run_button.pack(
-    ipadx=5,
-    ipady=5,
-    expand=True
-)
+    run_button = ttk.Button(
+        root,
+        text='Run',
+        command=entryhandler
+    )
 
-root.mainloop()
+    run_button.pack(
+        ipadx=5,
+        ipady=5,
+        expand=True
+    )
+
+    root.mainloop()
+
+if __name__ == '__main__':
+    create_gui()
