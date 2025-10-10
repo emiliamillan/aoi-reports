@@ -8,10 +8,12 @@ import tkinter as tk
 from tkinter import ttk
 import io
 
-PATHS_TO_SEARCH = [
+INPUT_PATHS = [
     #'\\\\mexhome03\\Data\\MC Back End\\Generic\\Molding and Singulation\\Emilia M\\mi28 reportes'
     Path.cwd() / 'in_reports' / 'Mi02', # Local tests
     ]
+
+OUTPUT_PATH = Path.cwd() / 'out_reports'
 
 OUTPUT_COLUMNS = [
     ('', 'Lot'),
@@ -172,7 +174,6 @@ COL_NAMES = {
     
     "table_names": [ "Wafer Information,"]
 }
-
 
 def load_tables_from_csv(file_path):
     """Split CSV with multiple tables separated by empty rows"""
@@ -407,7 +408,7 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
 
     #Select files we will process, only .txt files within the range dates
     print('Searching for files in Paths...')
-    for path in PATHS_TO_SEARCH:
+    for path in INPUT_PATHS:
         os.walk(path)
         for filename in os.listdir(path):
             if 'csv' not in filename.split(".")[-1]:
@@ -452,7 +453,7 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     out_df = fix_column_names(out_df)
 
     #Export dataframe
-    output_dir = Path.cwd() / 'report_app_MI-28'
+    output_dir = OUTPUT_PATH
     output_dir.mkdir(exist_ok=True)  # Create directory if it doesn't exist
     
     new_filename = output_dir / f'report_{start_date.strftime("%Y-%m-%d")}_{end_date.strftime("%Y-%m-%d")}.csv'
