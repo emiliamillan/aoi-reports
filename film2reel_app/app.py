@@ -10,15 +10,16 @@ import io
 
 INPUT_PATHS = [
     #'\\\\mexhome03\\Data\\MC Back End\\Generic\\Molding and Singulation\\Emilia M\\mi28 reportes'
-    Path.cwd() / 'in_reports' / 'Mi02', # Local tests
+    Path.cwd() / 'film2reel_app' / 'test' / 'in_reports' / 'Mi02', # Local tests
     ]
 
-OUTPUT_PATH = Path.cwd() / 'out_reports'
+OUTPUT_PATH = Path.cwd() / 'film2reel_app' / 'test' / 'out_reports'
 
 OUTPUT_COLUMNS = [
     ('', 'Lot'),
     ('', 'Equip ID'),
-    ('', 'Date'),
+    ('Date', 'Start'),
+    ('Date', 'End'),
 
     ('Lot Summary', 'Qty Insp DP1'),
     ('Lot Summary', 'Total Reject'),
@@ -227,7 +228,7 @@ def load_tables_from_csv(file_path):
         print(f"Error reading file {file_path}: {e}")
         return []
 
-def add_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, next_index: int) -> pd.DataFrame:
+def add_row_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, next_index: int) -> pd.DataFrame:
     report_info = in_tables['report_info']
 
     die_position_1 = in_tables['Die Position 1 Vision Yield'].T # Transposed
@@ -285,9 +286,13 @@ def add_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, next
     wafer_info = in_tables['Wafer Information,']
 
     # Add values
-    out_table.loc[next_index,('', 'Lot')] = report_info.iloc[1, 0]      # Row 1, Column 0
+    out_table.loc[next_index,('', 'Lot')] = report_info.iloc[1, 0].split(' - ')[1] # Row 1, Column 0
     out_table.loc[next_index,('', 'Equip ID')] = report_info.iloc[0, 0]  # Row 0, Column 0
-    out_table.loc[next_index,('', 'Date')] = report_info.iloc[2, 0]      # Row 2, Column 0
+
+    start_date = report_info.iloc[2, 0].split(" To : ")[0].replace("From : ", "")
+    end_date = report_info.iloc[2, 0].split(" To : ")[1]
+    out_table.loc[next_index,('Date', 'Start')] = start_date  # Row 2, Column 0
+    out_table.loc[next_index,('Date', 'End')] = end_date  # Row 2, Column 0
 
     out_table.loc[next_index, 'Die Position 1 Vision Yield'] = die_position_1.iloc[0].values
     out_table.loc[next_index, 'Die Position 2 Vision Yield'] = die_position_2.iloc[0].values
@@ -379,7 +384,6 @@ def add_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, next
 
 def fix_column_names(df: pd.DataFrame) -> pd.DataFrame:
     "Removes duplicate category headers from MultiIndex columns"
-    # Clean up MultiIndex columns - remove duplicate category headers
     new_columns = []
     prev_category = None
 
@@ -432,7 +436,7 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
             if in_tables:
                 #print(f"Tables: {len(in_tables)} | File: {file_path.name}")
                 #print(f'Adding values...')
-                out_df = add_values(in_tables, out_df, len(out_df))
+                out_df = add_row_values(in_tables, out_df, len(out_df))
             else:
                 print(f"No tables found in {file_path.name}")
                         
@@ -458,7 +462,7 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     
     new_filename = output_dir / f'report_{start_date.strftime("%Y-%m-%d")}_{end_date.strftime("%Y-%m-%d")}.csv'
     
-    print(f"Data shape: {out_df.shape}")
+    #print(f"Data shape: {out_df.shape}")
 
     out_df.to_csv(new_filename, index=False)
     print(f'Created at: {new_filename}')
@@ -481,7 +485,7 @@ def create_gui():
     name_label.pack(pady=2)
 
     start_entry = ttk.Entry(root)
-    #start_entry.insert(0, '2025-10-05') # For testing
+    start_entry.insert(0, '2025-10-05') # For testing
     start_entry.pack(pady=5)
     start_entry.focus()
 
@@ -489,7 +493,7 @@ def create_gui():
     date_label.pack(pady=2)
 
     end_entry = ttk.Entry(root)
-    #end_entry.insert(0, '2025-10-07') # For testing
+    end_entry.insert(0, '2025-10-07') # For testing
     end_entry.pack(pady=5)
 
     def entryhandler():
