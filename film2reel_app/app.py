@@ -10,7 +10,12 @@ import io
 
 INPUT_PATHS = [
     #'\\\\mexhome03\\Data\\MC Back End\\Generic\\Molding and Singulation\\Emilia M\\mi28 reportes'
-    Path.cwd() / 'film2reel_app' / 'test' / 'in_reports' / 'Mi02', # Local tests
+    #Path.cwd() / 'MEX6MI28PH01' / 'LotReport' , # Local tests
+    '\\\\MEX6MI28PH01\\LotReport',
+    '\\\\6mi28ph02\\LotReport',
+    '\\\\6mi28ph03\\LotReport',
+    '\\\\6mi28ph04\\LotReport',
+    '\\\\6mi28ph05\\LotReport'
     ]
 
 OUTPUT_PATH = Path.cwd() / 'film2reel_app' / 'test' / 'out_reports'
