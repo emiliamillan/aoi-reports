@@ -10,12 +10,12 @@ import io
 
 INPUT_PATHS = [
     #'\\\\mexhome03\\Data\\MC Back End\\Generic\\Molding and Singulation\\Emilia M\\mi28 reportes'
-    #Path.cwd() / 'MEX6MI28PH01' / 'LotReport' , # Local tests
-    '\\\\MEX6MI28PH01\\LotReport',
-    '\\\\6mi28ph02\\LotReport',
-    '\\\\6mi28ph03\\LotReport',
-    '\\\\6mi28ph04\\LotReport',
-    '\\\\6mi28ph05\\LotReport'
+    #Path.cwd() / 'film2reel_app' / 'test' / 'in_reports' / 'Mi02', # Local tests
+    Path('MEX6MI28PH01') / 'LotReport',
+    Path('6mi28ph02') / 'LotReport',
+    Path('6mi28ph03') / 'LotReport',
+    Path('6mi28ph04') / 'LotReport',
+    Path('6mi28ph05') / 'LotReport'
     ]
 
 OUTPUT_PATH = Path.cwd() / 'film2reel_app' / 'test' / 'out_reports'
@@ -181,7 +181,7 @@ COL_NAMES = {
     "table_names": [ "Wafer Information,"]
 }
 
-def load_tables_from_csv(file_path):
+def load_tables_from_csv(file_path: Path):
     """Split CSV with multiple tables separated by empty rows"""
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -233,7 +233,7 @@ def load_tables_from_csv(file_path):
         print(f"Error reading file {file_path}: {e}")
         return []
 
-def add_row_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, next_index: int) -> pd.DataFrame:
+def add_row_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, next_index: int, file_path: Path) -> pd.DataFrame:
     report_info = in_tables['report_info']
 
     die_position_1 = in_tables['Die Position 1 Vision Yield'].T # Transposed
@@ -292,7 +292,7 @@ def add_row_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, 
 
     # Add values
     out_table.loc[next_index,('', 'Lot')] = report_info.iloc[1, 0].split(' - ')[1] # Row 1, Column 0
-    out_table.loc[next_index,('', 'Equip ID')] = report_info.iloc[0, 0]  # Row 0, Column 0
+    out_table.loc[next_index,('', 'Equip ID')] = file_path.parts[0]  # Row 0, Column 0
 
     start_date = report_info.iloc[2, 0].split(" To : ")[0].replace("From : ", "")
     end_date = report_info.iloc[2, 0].split(" To : ")[1]
@@ -318,6 +318,7 @@ def add_row_values(in_tables: dict[str, pd.DataFrame], out_table: pd.DataFrame, 
 
     columns_to_sum = [col for col in die_position_1.columns if col not in columns_to_exclude]
     die_position_1_sum = die_position_1.iloc[0][columns_to_sum].astype(int).sum()
+    
     columns_to_sum = [col for col in die_position_2.columns if col not in columns_to_exclude]
     die_position_2_sum = die_position_2.iloc[0][columns_to_sum].astype(int).sum()
 
@@ -432,18 +433,13 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
         print("No files found in the specified date range.")
         return None, 0
     
+    print(f"Processing files...")
     for file in files:
         try:
-            print(f"Processing file: {file}")
             file_path = Path(file)
             in_tables = load_tables_from_csv(file_path)
-            
-            if in_tables:
-                #print(f"Tables: {len(in_tables)} | File: {file_path.name}")
-                #print(f'Adding values...')
-                out_df = add_row_values(in_tables, out_df, len(out_df))
-            else:
-                print(f"No tables found in {file_path.name}")
+            if in_tables: out_df = add_row_values(in_tables, out_df, len(out_df), file_path)
+            else: print(f"No tables found in {file_path.name}")
                         
         except Exception as e:
             print(f"Error while processing {file}. Will not include that file.") 
