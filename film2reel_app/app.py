@@ -3,6 +3,7 @@ from logging import root
 import os
 from pathlib import Path
 import subprocess
+import traceback
 import pandas as pd
 import tkinter as tk
 from tkinter import ttk
@@ -10,12 +11,12 @@ import io
 
 INPUT_PATHS = [
     #'\\\\mexhome03\\Data\\MC Back End\\Generic\\Molding and Singulation\\Emilia M\\mi28 reportes'
-    #Path.cwd() / 'film2reel_app' / 'test' / 'in_reports' / 'Mi02', # Local tests
-    Path('MEX6MI28PH01') / 'LotReport',
-    Path('6mi28ph02') / 'LotReport',
-    Path('6mi28ph03') / 'LotReport',
-    Path('6mi28ph04') / 'LotReport',
-    Path('6mi28ph05') / 'LotReport'
+    Path.cwd() / 'film2reel_app' / 'test' / 'in_reports' / 'Mi02', # Local tests
+    #Path('MEX6MI28PH01') / 'LotReport',
+    #Path('6mi28ph02') / 'LotReport',
+    #Path('6mi28ph03') / 'LotReport',
+    #Path('6mi28ph04') / 'LotReport',
+    #Path('6mi28ph05') / 'LotReport'
     ]
 
 OUTPUT_PATH = Path.cwd() / 'film2reel_app' / 'test' / 'out_reports'
@@ -223,7 +224,7 @@ def load_tables_from_csv(file_path: Path):
                         dtype=str,              
                         header=0)
                     dataframes[section.split(',')[0]] = df
-                print(df.head())
+                #print(df.head())
             except Exception as e:
                 print(f"Error reading table: {e}")
                 continue
@@ -414,7 +415,7 @@ def get_last_modified_time(file_path):
 def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     """Main function to process files and generate report"""
     files = list()
-    out_df = pd.DataFrame(columns=pd.MultiIndex.from_tuples(OUTPUT_COLUMNS), dtype=str)
+    main_out_df = pd.DataFrame(columns=pd.MultiIndex.from_tuples(OUTPUT_COLUMNS), dtype=str)
 
     #Select files we will process, only .txt files within the range dates
     print('Searching for files in Paths...')
@@ -438,35 +439,80 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
         try:
             file_path = Path(file)
             in_tables = load_tables_from_csv(file_path)
-            if in_tables: out_df = add_row_values(in_tables, out_df, len(out_df), file_path)
-            else: print(f"No tables found in {file_path.name}")
-                        
+            if in_tables: main_out_df = add_row_values(in_tables, main_out_df, len(main_out_df), file_path)
+            else: print(f"No tables found in {file_path.name}")        
         except Exception as e:
             print(f"Error while processing {file}. Will not include that file.") 
             print(f"Error: {e}") 
             continue 
     
-    # Check if we have any data to export
-    if out_df is None or out_df.empty:
-        print("No data to export. Check your date range or file contents.")
-        return None, len(files)
-    
-    # Remove whitespaces
-    out_df = out_df.map(lambda x: x.strip() if isinstance(x, str) else x)
+    # Sheet 2 in Excel
+    # Summary Tables
+    summary_df = main_out_df.loc[:, [
+        ('', 'Lot'),
+        ('', 'Equip ID'),
+        ('Lot Summary', 'Qty Insp DP1'),
+        ('Infrared Ray Vision Yield', 'Crack Failed'),
+        ('TopVision Vision Yield', 'Marking Failed'),
+        ('Bump Vision Yield', 'Contamination Failed'),
+    ]].copy()
+    summary_df.columns = ['Lot','Equip', 'Qty In', 'Total Crack', 'Total Marked', 'Total Contamination']
+    summary_df['Qty In'] = pd.to_numeric(summary_df['Qty In'], errors='coerce')
+    summary_df['Total Marked'] = pd.to_numeric(summary_df['Total Marked'], errors='coerce')
+    summary_df['Total Crack'] = pd.to_numeric(summary_df['Total Crack'], errors='coerce')
+
+    # GroupBy EquipId Table
+    equip_summary = summary_df.groupby('Equip').sum(numeric_only=True).reset_index()
+    print(f'hola: {equip_summary.columns}')
+    equip_df = equip_summary[['Equip', 'Qty In', 'Total Marked', 'Total Crack']].copy()
+    totals = {
+        'Equip': 'TOTAL',
+        'Qty In': equip_df['Qty In'].astype(int).sum(),
+        'Total Marked': equip_df['Total Marked'].astype(int).sum(),
+        'Total Crack': equip_df['Total Crack'].astype(int).sum()
+    }
+    equip_df = pd.concat([equip_df, pd.DataFrame([totals])], ignore_index=True)
+    print(f'equip_df: {equip_df}')
+
+    # PPMs Table
+    ppm_df = equip_df[['Equip', 'Total Marked', 'Total Crack']].copy()
+    ppm_df.columns = ['Equip', 'Mark', 'Crack']
+    total_qty_in = equip_df.loc[equip_df['Equip'] == 'TOTAL', 'Qty In'].astype(float).values[0]
+    ppm_df['Mark PPM'] = (ppm_df['Mark'].astype(float) / total_qty_in) * 1_000_000
+    ppm_df['Crack PPM'] = (ppm_df['Crack'].astype(float) / total_qty_in) * 1_000_000
+    print(f'ppm_df: {ppm_df}')
 
     # Fix column names
-    out_df = fix_column_names(out_df)
+    main_out_df = fix_column_names(main_out_df)
 
     #Export dataframe
     output_dir = OUTPUT_PATH
     output_dir.mkdir(exist_ok=True)  # Create directory if it doesn't exist
+    new_filename = output_dir / f'report_{start_date.strftime("%Y-%m-%d")}_{end_date.strftime("%Y-%m-%d")}.xlsx'
     
-    new_filename = output_dir / f'report_{start_date.strftime("%Y-%m-%d")}_{end_date.strftime("%Y-%m-%d")}.csv'
-    
-    #print(f"Data shape: {out_df.shape}")
+    with pd.ExcelWriter(new_filename, engine='openpyxl') as writer:
+        if main_out_df is None or main_out_df.empty:
+            print("No data to export. Check your date range or file contents.")
+        else: 
+            main_out_df = main_out_df.map(lambda x: x.strip() if isinstance(x, str) else x)
+            main_out_df.to_excel(writer, sheet_name='Main', index=True)
 
-    out_df.to_csv(new_filename, index=False)
-    print(f'Created at: {new_filename}')
+        if summary_df is None or summary_df.empty:
+            print("No data to export. Check your date range or file contents.")
+        else:
+            summary_df.to_excel(writer, sheet_name='Summary', index=True)
+
+        if equip_df is None or equip_df.empty:
+            print("No data to export. Check your date range or file contents.")
+        else:
+            equip_df.to_excel(writer, sheet_name='Equip Summary', index=True)
+
+        if ppm_df is None or ppm_df.empty:
+            print("No data to export. Check your date range or file contents.")
+        else:
+            ppm_df.to_excel(writer, sheet_name='PPMs Summary', index=True)
+
+    print(f'Report generated: {new_filename}')
     
     try:
         subprocess.Popen(['start', 'excel', str(new_filename)], shell=True)
@@ -508,7 +554,7 @@ def create_gui():
         except ValueError as e:
             print(f"Invalid date format: {e}")
         except Exception as e:
-            print(f"Error generating report: {e}")
+            print(f"Error generating report: {e} | Message: {traceback.format_exc()}")
 
     run_button = ttk.Button(
         root,
