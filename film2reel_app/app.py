@@ -3,6 +3,7 @@ from logging import root
 import os
 from pathlib import Path
 import subprocess
+import time
 import traceback
 import pandas as pd
 import tkinter as tk
@@ -433,14 +434,15 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
     if not files:
         print("No files found in the specified date range.")
         return None, 0
-    
+    processed_files = 0
     print(f"Processing files...")
     for file in files:
         try:
             file_path = Path(file)
             in_tables = load_tables_from_csv(file_path)
             if in_tables: main_out_df = add_row_values(in_tables, main_out_df, len(main_out_df), file_path)
-            else: print(f"No tables found in {file_path.name}")        
+            else: print(f"No tables found in {file_path.name}")
+            processed_files += 1
         except Exception as e:
             print(f"Error while processing {file}. Will not include that file.") 
             print(f"Error: {e}") 
@@ -513,6 +515,7 @@ def main(start_date: datetime.date, end_date: datetime.date) -> str | None:
             ppm_df.to_excel(writer, sheet_name='PPMs Summary', index=True)
 
     print(f'Report generated: {new_filename}')
+    print(f'Processed files: {processed_files} - {processed_files/len(files)*100:.2f}%')
     
     try:
         subprocess.Popen(['start', 'excel', str(new_filename)], shell=True)
@@ -546,11 +549,14 @@ def create_gui():
     def entryhandler():
         try:
             start, end = start_entry.get(), end_entry.get()
-            result = main(datetime.strptime(start, "%Y-%m-%d").date(), datetime.strptime(end, "%Y-%m-%d").date())
+            start_time = time.time()
+            result, files_count = main(datetime.strptime(start, "%Y-%m-%d").date(), datetime.strptime(end, "%Y-%m-%d").date())
             if result:
                 print("Report generated successfully!")
             else:
                 print("No report generated. Check your date range.")
+            print(f'Execution Time: {time.time() - start_time:.2f}s')
+
         except ValueError as e:
             print(f"Invalid date format: {e}")
         except Exception as e:
