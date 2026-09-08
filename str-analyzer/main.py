@@ -11,18 +11,6 @@ def load_excel(path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     return sheet_1, sheet_2
 
 
-def search_value(df: pd.DataFrame, values: list[str]) -> pd.DataFrame:
-    """Search multiple STR values."""
-
-    #2. Buscar STR
-
-    values = [value.strip().lower() for value in values if value.strip()]
-
-    return df[
-        df["STR"].astype("string").str.strip().str.lower().isin(values)
-    ]
-
-
 def normalize_str(series: pd.Series) -> pd.Series:
     """Normalize STR values."""
 
@@ -32,6 +20,16 @@ def normalize_str(series: pd.Series) -> pd.Series:
         .str.replace(r"\.0$", "", regex=True)
         .str.lower()
     )
+
+
+def search_value(df: pd.DataFrame, values: list[str]) -> pd.DataFrame:
+    """Search multiple STR values."""
+
+    #2. Buscar STR
+
+    values = normalize_str(pd.Series(values)).dropna()
+
+    return df[normalize_str(df["STR"]).isin(values)]
 
 
 def add_lote(results: pd.DataFrame, sheet_1: pd.DataFrame) -> pd.DataFrame:
