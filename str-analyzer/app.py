@@ -1,271 +1,332 @@
 import sys
-import pandas as pd
+from datetime import datetime
+from pathlib import Path
 
 from PySide6.QtWidgets import (
     QApplication,
-    QWidget,
-    QVBoxLayout,
-    QPushButton,
     QFileDialog,
     QLabel,
-    QTextEdit,
+    QLineEdit,
+    QMainWindow,
     QMessageBox,
-    QTableWidget,
-    QTableWidgetItem,
-    QHBoxLayout
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QHBoxLayout,
+    QWidget,
 )
 
-from analyzer import STRAnalyzer
-from exporter import export_report
+from main import generate_report
 
 
-class STRAnalyzerApp(QWidget):
+class MainWindow(QMainWindow):
+    """Main application window."""
 
-    def __init__(self):
-
+    def __init__(self) -> None:
         super().__init__()
 
-        self.file_path = None
+        self.setWindowTitle("STR Analyzer")
+        self.setMinimumSize(700, 500)
 
-        self.analyzer = STRAnalyzer()
+        self.setup_ui()
 
-        self.init_ui()
+    def setup_ui(self) -> None:
+        """Create the application interface."""
 
-    def init_ui(self):
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
 
-        self.setWindowTitle(
-            "STR Defect Analyzer"
-        )
+        main_layout = QVBoxLayout(central_widget)
+        main_layout.setContentsMargins(30, 30, 30, 30)
+        main_layout.setSpacing(15)
 
-        self.resize(1200, 800)
+        #1. Título
 
-        layout = QVBoxLayout()
+        title = QLabel("STR Analyzer")
+        title.setObjectName("title")
 
-        self.file_label = QLabel(
-            "No file selected"
-        )
+        subtitle = QLabel("Generate filtered Excel reports from STR values.")
+        subtitle.setObjectName("subtitle")
 
-        browse_btn = QPushButton(
-            "Select Excel File"
-        )
+        main_layout.addWidget(title)
+        main_layout.addWidget(subtitle)
 
-        browse_btn.clicked.connect(
-            self.select_file
-        )
+        #2. Archivo
 
-        self.str_box = QTextEdit()
+        raw_data_label = QLabel("Raw Data Excel")
+        raw_data_label.setObjectName("sectionLabel")
 
-        self.str_box.setPlaceholderText(
-            "Enter STRs\n\n319019\n319331\n319579"
-        )
+        main_layout.addWidget(raw_data_label)
 
-        analyze_btn = QPushButton(
-            "Analyze"
-        )
+        file_layout = QHBoxLayout()
 
-        analyze_btn.clicked.connect(
-            self.run_analysis
-        )
+        self.file_input = QLineEdit()
+        self.file_input.setPlaceholderText("Select the raw data Excel file...")
 
-        export_btn = QPushButton(
-            "Export Excel Report"
-        )
+        browse_button = QPushButton("Browse")
+        browse_button.clicked.connect(self.browse_file)
 
-        export_btn.clicked.connect(
-            self.export_excel
-        )
+        file_layout.addWidget(self.file_input)
+        file_layout.addWidget(browse_button)
 
-        button_layout = QHBoxLayout()
+        main_layout.addLayout(file_layout)
 
-        button_layout.addWidget(
-            analyze_btn
-        )
+        #3. STR Values
 
-        button_layout.addWidget(
-            export_btn
-        )
+        str_label = QLabel("STR Values")
+        str_label.setObjectName("sectionLabel")
 
-        self.summary_label = QLabel()
+        main_layout.addWidget(str_label)
 
-        self.table = QTableWidget()
+        self.str_input = QLineEdit()
+        self.str_input.setPlaceholderText("Example: 315779, 315780, 315781")
 
-        layout.addWidget(browse_btn)
-        layout.addWidget(self.file_label)
-        layout.addWidget(self.str_box)
-        layout.addLayout(button_layout)
-        layout.addWidget(self.summary_label)
-        layout.addWidget(self.table)
+        main_layout.addWidget(self.str_input)
 
-        self.setLayout(layout)
+        #4. Generar reporte
 
-    def select_file(self):
+        self.generate_button = QPushButton("Generate Report")
+        self.generate_button.setObjectName("generateButton")
+        self.generate_button.setMinimumHeight(45)
+        self.generate_button.clicked.connect(self.generate_report)
 
-        path, _ = QFileDialog.getOpenFileName(
+        main_layout.addWidget(self.generate_button)
+
+        #5. Status
+
+        status_label = QLabel("Status")
+        status_label.setObjectName("sectionLabel")
+
+        main_layout.addWidget(status_label)
+
+        self.status_box = QTextEdit()
+        self.status_box.setReadOnly(True)
+
+        main_layout.addWidget(self.status_box)
+        main_layout.addStretch()
+
+        self.apply_styles()
+
+    #1. Seleccionar archivo
+
+    def browse_file(self) -> None:
+        """Select the raw data Excel file."""
+
+        file_path, _ = QFileDialog.getOpenFileName(
             self,
-            "Select Workbook",
+            "Select Raw Data Excel",
             "",
-            "Excel Files (*.xlsx)"
+            "Excel Files (*.xlsx *.xls)",
         )
 
-        if path:
+        if file_path:
+            self.file_input.setText(file_path)
+            self.status_box.append(f"File selected: {file_path}")
 
-            self.file_path = path
+    #2. Generar reporte
 
-            self.file_label.setText(path)
+    def generate_report(self) -> None:
+        """Generate the Excel report."""
 
-    def run_analysis(self):
+        input_path = self.file_input.text().strip()
+        str_text = self.str_input.text().strip()
 
-        if not self.file_path:
+        #1. Validar archivo
 
+        if not input_path:
             QMessageBox.warning(
                 self,
-                "Warning",
-                "Select a workbook first."
+                "Missing File",
+                "Please select the raw data Excel file.",
             )
             return
 
-        raw = self.str_box.toPlainText()
-
-        strs = []
-
-        for line in raw.splitlines():
-
-            val = (
-                line.strip()
-                .replace("STR-", "")
-            )
-
-            if val:
-
-                strs.append(val)
-
-        if not strs:
-
+        if not Path(input_path).exists():
             QMessageBox.warning(
                 self,
-                "Warning",
-                "Enter at least one STR."
+                "File Not Found",
+                "The selected Excel file does not exist.",
             )
             return
 
-        df = self.analyzer.load_data(
-            self.file_path
-        )
+        #2. Validar STR
 
-        self.filtered = (
-            self.analyzer.filter_strs(
-                df,
-                strs
+        if not str_text:
+            QMessageBox.warning(
+                self,
+                "Missing STR Values",
+                "Please enter at least one STR value.",
             )
+            return
+
+        #3. Obtener STR
+
+        values = [value.strip() for value in str_text.split(",") if value.strip()]
+
+        #4. Seleccionar archivo de salida
+
+        output_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Report",
+            f"str_report_{datetime.now():%Y-%m-%d_%H-%M-%S}.xlsx",
+            "Excel Files (*.xlsx)",
         )
 
-        self.defects = (
-            self.analyzer.normalize_defects(
-                self.filtered
+        if not output_path:
+            return
+
+        #5. Generar reporte
+
+        self.generate_button.setEnabled(False)
+        self.status_box.clear()
+        self.status_box.append("Processing Excel file...")
+
+        QApplication.processEvents()
+
+        try:
+            results_count = generate_report(input_path, output_path, values)
+
+            if results_count == 0:
+                self.status_box.append("No matching records found.")
+
+                QMessageBox.information(
+                    self,
+                    "No Results",
+                    "No matching STR records were found.",
+                )
+
+                return
+
+            self.status_box.append(f"Results found: {results_count}")
+            self.status_box.append(f"Report saved: {output_path}")
+
+            QMessageBox.information(
+                self,
+                "Success",
+                (
+                    "Report generated successfully!\n\n"
+                    f"Results: {results_count}\n"
+                    f"File: {output_path}"
+                ),
             )
-        )
 
-        self.pareto = (
-            self.analyzer.build_pareto(
-                self.defects
+        except FileNotFoundError:
+            self.status_box.append("Error: File not found.")
+
+            QMessageBox.critical(
+                self,
+                "Error",
+                "The Excel file could not be found.",
             )
-        )
 
-        total_defects = int(
-            self.pareto["Qty"].sum()
-        )
+        except KeyError as e:
+            self.status_box.append(f"Error: Missing column: {e}")
 
-        top_defect = (
-            self.pareto.iloc[0]["Defect"]
-        )
+            QMessageBox.critical(
+                self,
+                "Missing Column",
+                f"Required column not found: {e}",
+            )
 
-        self.summary_label.setText(
-            f"""
-            STRs Requested: {len(strs)}
+        except Exception as e:
+            self.status_box.append(f"Error: {e}")
 
-            STRs Found:
-            {self.filtered.shape[0]}
+            QMessageBox.critical(
+                self,
+                "Error",
+                str(e),
+            )
 
-            Total Defects:
-            {total_defects}
+        finally:
+            self.generate_button.setEnabled(True)
 
-            Top Defect:
-            {top_defect}
+    #3. Estilos
+
+    def apply_styles(self) -> None:
+        """Apply application styling."""
+
+        self.setStyleSheet(
+            """
+            QMainWindow {
+                background-color: #f5f6f8;
+            }
+
+            QLabel#title {
+                font-size: 28px;
+                font-weight: bold;
+                color: #202124;
+            }
+
+            QLabel#subtitle {
+                font-size: 14px;
+                color: #6b7280;
+            }
+
+            QLabel#sectionLabel {
+                font-size: 14px;
+                font-weight: bold;
+                color: #374151;
+            }
+
+            QLineEdit {
+                background-color: white;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            QLineEdit:focus {
+                border: 1px solid #2563eb;
+            }
+
+            QPushButton {
+                background-color: white;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                padding: 10px 18px;
+                font-weight: bold;
+            }
+
+            QPushButton:hover {
+                background-color: #f3f4f6;
+            }
+
+            QPushButton#generateButton {
+                background-color: #2563eb;
+                color: white;
+                border: none;
+                font-size: 15px;
+            }
+
+            QPushButton#generateButton:hover {
+                background-color: #1d4ed8;
+            }
+
+            QPushButton#generateButton:disabled {
+                background-color: #93c5fd;
+            }
+
+            QTextEdit {
+                background-color: white;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                padding: 10px;
+                font-size: 13px;
+            }
             """
         )
 
-        self.load_table()
 
-    def load_table(self):
+def main() -> None:
+    """Application entry point."""
 
-        data = self.pareto.head(25)
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
 
-        self.table.setColumnCount(
-            len(data.columns)
-        )
-
-        self.table.setRowCount(
-            len(data)
-        )
-
-        self.table.setHorizontalHeaderLabels(
-            data.columns
-        )
-
-        for row in range(len(data)):
-
-            for col in range(len(data.columns)):
-
-                value = str(
-                    data.iloc[row, col]
-                )
-
-                self.table.setItem(
-                    row,
-                    col,
-                    QTableWidgetItem(value)
-                )
-
-    def export_excel(self):
-
-        if not hasattr(
-                self,
-                "pareto"):
-
-            QMessageBox.warning(
-                self,
-                "Warning",
-                "Run analysis first."
-            )
-            return
-
-        path, _ = QFileDialog.getSaveFileName(
-            self,
-            "Save Report",
-            "STR_Pareto_Report.xlsx",
-            "Excel Files (*.xlsx)"
-        )
-
-        if not path:
-            return
-
-        export_report(
-            self.filtered,
-            self.pareto,
-            path
-        )
-
-        QMessageBox.information(
-            self,
-            "Complete",
-            "Report exported successfully."
-        )
+    sys.exit(app.exec())
 
 
-app = QApplication(sys.argv)
-
-window = STRAnalyzerApp()
-
-window.show()
-
-sys.exit(app.exec())
+if __name__ == "__main__":
+    main()
