@@ -7,5 +7,6 @@ requires-python = ">=3.14"
 dependencies = [
     "openpyxl>=3.1.5",
     "pandas>=3.0.5",
+    "pyside6>=6.11.2",
     "pytest>=9.1.1",
 ]
