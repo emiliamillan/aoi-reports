@@ -12,7 +12,14 @@ import io
 
 INPUT_PATHS = [
     #'\\\\mexhome03\\Data\\MC Back End\\Generic\\Molding and Singulation\\Emilia M\\mi28 reportes'
-    Path.cwd() / 'film2reel_app' / 'test' / 'in_reports' / 'Mi02', # Local tests
+    #Path.cwd() / 'film2reel_app' / 'test' / 'in_reports' / 'Mi02', # Local tests
+    #'\\\\MEX6MI28PH01\\LotReport',
+    '\\\\MEX6FTRP01\\LotReport',
+    '\\\\MEX6FTRP02\\LotReport',
+    '\\\\MEX6FTRP03\\LotReport',
+    '\\\\MEX6FTRP04\\LotReport',
+    '\\\\MEX6FTRP05\\LotReport',
+    '\\\\MEX6FTRP06\\LotReport'
     #Path('MEX6MI28PH01') / 'LotReport',
     #Path('6mi28ph02') / 'LotReport',
     #Path('6mi28ph03') / 'LotReport',
