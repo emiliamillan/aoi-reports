@@ -37,21 +37,23 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(30, 30, 30, 30)
+        main_layout.setContentsMargins(30, 30, 30, 20)
         main_layout.setSpacing(15)
 
-        #1. Título
+        # 1. Título
 
         title = QLabel("STR Analyzer")
         title.setObjectName("title")
 
-        subtitle = QLabel("Generate filtered Excel reports from STR values.")
+        subtitle = QLabel(
+            "Generate filtered Excel reports from STR values."
+        )
         subtitle.setObjectName("subtitle")
 
         main_layout.addWidget(title)
         main_layout.addWidget(subtitle)
 
-        #2. Archivo
+        # 2. Archivo
 
         raw_data_label = QLabel("Raw Data Excel")
         raw_data_label.setObjectName("sectionLabel")
@@ -61,7 +63,9 @@ class MainWindow(QMainWindow):
         file_layout = QHBoxLayout()
 
         self.file_input = QLineEdit()
-        self.file_input.setPlaceholderText("Select the raw data Excel file...")
+        self.file_input.setPlaceholderText(
+            "Select the raw data Excel file..."
+        )
 
         browse_button = QPushButton("Browse")
         browse_button.clicked.connect(self.browse_file)
@@ -71,7 +75,7 @@ class MainWindow(QMainWindow):
 
         main_layout.addLayout(file_layout)
 
-        #3. STR Values
+        # 3. STR Values
 
         str_label = QLabel("STR Values")
         str_label.setObjectName("sectionLabel")
@@ -79,11 +83,13 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(str_label)
 
         self.str_input = QLineEdit()
-        self.str_input.setPlaceholderText("Example: 315779, 315780, 315781")
+        self.str_input.setPlaceholderText(
+            "Example: 315779, 315780, 315781"
+        )
 
         main_layout.addWidget(self.str_input)
 
-        #4. Generar reporte
+        # 4. Generar reporte
 
         self.generate_button = QPushButton("Generate Report")
         self.generate_button.setObjectName("generateButton")
@@ -92,7 +98,7 @@ class MainWindow(QMainWindow):
 
         main_layout.addWidget(self.generate_button)
 
-        #5. Status
+        # 5. Status
 
         status_label = QLabel("Status")
         status_label.setObjectName("sectionLabel")
@@ -103,11 +109,21 @@ class MainWindow(QMainWindow):
         self.status_box.setReadOnly(True)
 
         main_layout.addWidget(self.status_box)
+
+        # 6. Espacio flexible
+
         main_layout.addStretch()
+
+        # 7. Autor
+
+        author_label = QLabel("Author: Emilia Millan \nSeptember 2026")
+        author_label.setObjectName("author")
+
+        main_layout.addWidget(author_label)
 
         self.apply_styles()
 
-    #1. Seleccionar archivo
+    # 1. Seleccionar archivo
 
     def browse_file(self) -> None:
         """Select the raw data Excel file."""
@@ -121,9 +137,11 @@ class MainWindow(QMainWindow):
 
         if file_path:
             self.file_input.setText(file_path)
-            self.status_box.append(f"File selected: {file_path}")
+            self.status_box.append(
+                f"File selected: {file_path}"
+            )
 
-    #2. Generar reporte
+    # 2. Generar reporte
 
     def generate_report(self) -> None:
         """Generate the Excel report."""
@@ -131,7 +149,7 @@ class MainWindow(QMainWindow):
         input_path = self.file_input.text().strip()
         str_text = self.str_input.text().strip()
 
-        #1. Validar archivo
+        # 1. Validar archivo
 
         if not input_path:
             QMessageBox.warning(
@@ -149,7 +167,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        #2. Validar STR
+        # 2. Validar STR
 
         if not str_text:
             QMessageBox.warning(
@@ -159,11 +177,15 @@ class MainWindow(QMainWindow):
             )
             return
 
-        #3. Obtener STR
+        # 3. Obtener STR
 
-        values = [value.strip() for value in str_text.split(",") if value.strip()]
+        values = [
+            value.strip()
+            for value in str_text.split(",")
+            if value.strip()
+        ]
 
-        #4. Seleccionar archivo de salida
+        # 4. Seleccionar archivo de salida
 
         output_path, _ = QFileDialog.getSaveFileName(
             self,
@@ -175,7 +197,7 @@ class MainWindow(QMainWindow):
         if not output_path:
             return
 
-        #5. Generar reporte
+        # 5. Generar reporte
 
         self.generate_button.setEnabled(False)
         self.status_box.clear()
@@ -184,10 +206,16 @@ class MainWindow(QMainWindow):
         QApplication.processEvents()
 
         try:
-            results_count = generate_report(input_path, output_path, values)
+            results_count = generate_report(
+                input_path,
+                output_path,
+                values,
+            )
 
             if results_count == 0:
-                self.status_box.append("No matching records found.")
+                self.status_box.append(
+                    "No matching records found."
+                )
 
                 QMessageBox.information(
                     self,
@@ -197,8 +225,12 @@ class MainWindow(QMainWindow):
 
                 return
 
-            self.status_box.append(f"Results found: {results_count}")
-            self.status_box.append(f"Report saved: {output_path}")
+            self.status_box.append(
+                f"Results found: {results_count}"
+            )
+            self.status_box.append(
+                f"Report saved: {output_path}"
+            )
 
             QMessageBox.information(
                 self,
@@ -211,7 +243,9 @@ class MainWindow(QMainWindow):
             )
 
         except FileNotFoundError:
-            self.status_box.append("Error: File not found.")
+            self.status_box.append(
+                "Error: File not found."
+            )
 
             QMessageBox.critical(
                 self,
@@ -220,7 +254,9 @@ class MainWindow(QMainWindow):
             )
 
         except KeyError as e:
-            self.status_box.append(f"Error: Missing column: {e}")
+            self.status_box.append(
+                f"Error: Missing column: {e}"
+            )
 
             QMessageBox.critical(
                 self,
@@ -229,7 +265,9 @@ class MainWindow(QMainWindow):
             )
 
         except Exception as e:
-            self.status_box.append(f"Error: {e}")
+            self.status_box.append(
+                f"Error: {e}"
+            )
 
             QMessageBox.critical(
                 self,
@@ -240,7 +278,7 @@ class MainWindow(QMainWindow):
         finally:
             self.generate_button.setEnabled(True)
 
-    #3. Estilos
+    # 3. Estilos
 
     def apply_styles(self) -> None:
         """Apply application styling."""
@@ -266,6 +304,12 @@ class MainWindow(QMainWindow):
                 font-size: 14px;
                 font-weight: bold;
                 color: #374151;
+            }
+
+            QLabel#author {
+                font-size: 11px;
+                color: #9ca3af;
+                padding-top: 5px;
             }
 
             QLineEdit {

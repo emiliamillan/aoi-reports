@@ -32,10 +32,11 @@ def search_value(df: pd.DataFrame, values: list[str]) -> pd.DataFrame:
     return df[normalize_str(df["STR"]).isin(values)]
 
 
-def add_lote(results: pd.DataFrame, sheet_1: pd.DataFrame) -> pd.DataFrame:
-    """Find Lot using STR#."""
-
-    #3. Buscar Lot
+def add_lot_qty_rejects(
+    results: pd.DataFrame,
+    sheet_1: pd.DataFrame,
+) -> pd.DataFrame:
+    """Find Lot, Qty In and Rejects using STR#."""
 
     results = results.copy()
     sheet_1 = sheet_1.copy()
@@ -43,22 +44,29 @@ def add_lote(results: pd.DataFrame, sheet_1: pd.DataFrame) -> pd.DataFrame:
     results["_STR_LOOKUP"] = normalize_str(results["STR"])
     sheet_1["_STR_LOOKUP"] = normalize_str(sheet_1["STR#"])
 
-    lote_lookup = (
-        sheet_1[["_STR_LOOKUP", "Lot"]]
+    lookup = (
+        sheet_1[["_STR_LOOKUP", "Lot", "Qty In", "Rejects"]]
         .drop_duplicates(subset="_STR_LOOKUP")
     )
 
     results = results.merge(
-        lote_lookup,
+        lookup,
         on="_STR_LOOKUP",
         how="left",
     )
 
     results.drop(columns=["_STR_LOOKUP"], inplace=True)
 
+    # Mover las columnas después de STR
     lot_values = results.pop("Lot")
+    qty_in_values = results.pop("Qty In")
+    rejects_values = results.pop("Rejects")
+
     position = results.columns.get_loc("STR") + 1
+
     results.insert(position, "Lot", lot_values)
+    results.insert(position + 1, "Qty In", qty_in_values)
+    results.insert(position + 2, "Rejects", rejects_values)
 
     return results
 
@@ -113,30 +121,24 @@ def generate_report(
     """Generate the filtered Excel report."""
 
     #1. Cargar archivo
-
     sheet_1, sheet_2 = load_excel(input_path)
 
     #2. Buscar STR
-
     results = search_value(sheet_2, values)
 
     if results.empty:
         return 0
 
     #3. Buscar Lot
-
-    results = add_lote(results, sheet_1)
+    results = add_lot_qty_rejects(results, sheet_1)     
 
     #4. Agregar TOTAL
-
     results_with_total = add_total_row(results)
 
     #5. Organizar modos de falla
-
     results_with_total = organize_failure_modes(results_with_total)
 
     #6. Guardar archivo
-
     with pd.ExcelWriter(output_path, engine="openpyxl") as writer:
         results_with_total.to_excel(
             writer,
